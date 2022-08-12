@@ -42,5 +42,10 @@ social:
 google_site_verification: u4WXQl0Eu66rsQo2kRdCNx
 lang: en
 
+
+#jekyll 테마 URL 적용
 baseurl: ""
 url: "https://byj1009.github.io"
+
+#Skin type 변경
+skin: midnight
