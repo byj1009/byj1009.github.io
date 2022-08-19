@@ -1,6 +1,6 @@
-- title: Twitter
-  url: https://twitter.com/ngzhio
-  icon: fab fa-twitter
+- title: Notion
+  url: https://www.notion.so/e2ea1e3c2c644bf99dc93f5704b2b1cf?v=1ba17b2751e94dcd880cf8c2ada533eb
+  icon: fab fa-notion
 - title: GitHub
-  url: https://github.com/ngzhio/jekyll-theme-hamilton
+  url: https://github.com/byj1009
   icon: fab fa-github
