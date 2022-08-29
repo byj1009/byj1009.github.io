@@ -7,6 +7,10 @@ author: # 작성자
   - Byungineer
 #toc : true #Table of Contents
 ---
+## Apache Atlas
+Atlas는 기본적으로 Hadoop 스택 내부 및 외부에서 다른 툴 및 프로세스와 메타데이터를 교환할 수 있어 플랫폼에 상관없이 거버넌수 제어가 가능하므로 규제 준수 요구 사항에 효과적으로 대응할 수 있습니다.
+
+---
 
 ## Atlas 
 Atlas 작동 원리
@@ -15,11 +19,9 @@ Apache Atlas는 기본적으로 Hadoop 및 광범위한 데이터 에코시스�
 또한 Atlas는 기업이 타사 시스템으로 메타데이터를 손쉽게 내보낼 수 있도록 지원하여 에코시스템 전반에서 다운스트림 메타데이터의 일관성을 보장합니다.
 
 ## Data Lineage 기사
-[data_lineage_news1] : http://www.itdaily.kr/news/articleView.html?idxno=204141
-[data_lineage_news2] : http://www.itdaily.kr/news/articleView.html?idxno=204142
+[data_lineage_news1]
+[data_lineage_news2]
 
-Apache Atlas
-Atlas는 기본적으로 Hadoop 스택 내부 및 외부에서 다른 툴 및 프로세스와 메타데이터를 교환할 수 있어 플랫폼에 상관없이 거버넌수 제어가 가능하므로 규제 준수 요구 사항에 효과적으로 대응할 수 있습니다.
 
 Apache Atlas는 메타데이터 기반의 Enterprise Hadoop를 위한 확장 가능한 거버넌스를 제공합니다. Atlas의 핵심은 새로운 비즈니스 프로세스와 데이터 자산을 민첩하고 손쉽게 모델링할 수 있다는 것입니다. 이 유연한 형식 시스템을 통해 Hadoop 스택 내부 및 외부에서 다른 툴 및 프로세스와 메타데이터를 교환할 수 있어 플랫폼에 상관없이 거버넌스 제어가 하므로 규제 준수 요구 사항에 효과적으로 대할 수 있습니다.
 
@@ -48,3 +50,5 @@ REST API: Atlas 서비스, HDP 구성요소, UI 및 외부 툴에 유연성 높�
 
  
 [data_lineage]: https://en.wikipedia.org/wiki/Data_lineage
+[data_lineage_news1] : http://www.itdaily.kr/news/articleView.html?idxno=204141
+[data_lineage_news2] : http://www.itdaily.kr/news/articleView.html?idxno=204142
