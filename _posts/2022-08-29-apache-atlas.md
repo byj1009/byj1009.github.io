@@ -8,9 +8,20 @@ author: # 작성자
 #toc : true #Table of Contents
 ---
 
-test image 넣기
-이미지 넣기
+Atlas 개념
+
+---
+
+test 문구 입니다.
+
+정보.
 
 
-<img src="/image/atlas-banner.png" alt="test" style="height: 404px; width:316px;"/>
 
+ 
+
+<img src="/image/atlas-banner.png" alt="test" style="height: 512px; width:512px;"/>
+
+
+
+ 
