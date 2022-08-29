@@ -166,3 +166,9 @@ Check out the [Jekyll docs][jekyll-docs] for more info on how to get the most ou
 [jekyll-docs]: http://jekyllrb.com/docs/home
 [jekyll-gh]:   https://github.com/jekyll/jekyll
 [jekyll-talk]: https://talk.jekyllrb.com/
+
+
+
+이미지 넣기
+<img src="/_data/image/atlas-banner.png" alt="test" style="height: 100px; width:100px;"/>
+
