@@ -1,5 +1,14 @@
 ---
 layout: post
+title: "Backup Markdown Language" #게시물 이름
+tags: [test1, test2] #태그 설정
+categories: junk #카테고리 설정
+author: # 작성자
+  - Byungineer
+#toc : true #Table of Contents
+---
+
+layout: post
 toc: true
 title: "This post demonstrates post content styles"
 categories: junk
@@ -7,7 +16,33 @@ tags: [markdown, css, html]
 author:
   - Bart Simpson
   - Nelson Mandela Muntz
----
+
+
+
+This post tests the style of a task item list.
+
+Source:
+
+```markdown
+- [x] Eating
+- [ ] Walking
+  - [ ] Running
+- [ ] Sleeping
+```
+
+Rendered:
+
+- [x] Eating
+- [ ] Walking
+  - [ ] Running
+- [ ] Sleeping
+
+
+{% comment %}
+Might you have an include in your theme? Why not try it here!
+{% include my-themes-great-include.html %}
+{% endcomment %}
+
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce bibendum neque eget nunc mattis eu sollicitudin enim tincidunt. Vestibulum lacus tortor, ultricies id dignissim ac, bibendum in velit.
 
@@ -114,3 +149,20 @@ lorem | lorem ipsum | lorem ipsum dolor | lorem ipsum dolor sit
 lorem ipsum dolor sit amet | lorem ipsum dolor sit amet consectetur | lorem ipsum dolor sit amet | lorem ipsum dolor sit
 lorem ipsum dolor | lorem ipsum | lorem | lorem ipsum
 lorem ipsum dolor | lorem ipsum dolor sit | lorem ipsum dolor sit amet | lorem ipsum dolor sit amet consectetur
+
+
+
+
+{% highlight ruby %}
+def print_hi(name)
+  puts "Hi, #{name}"
+end
+print_hi('Tom')
+#=> prints 'Hi, Tom' to STDOUT.
+{% endhighlight %}
+
+Check out the [Jekyll docs][jekyll-docs] for more info on how to get the most out of Jekyll. File all bugs/feature requests at [Jekyll’s GitHub repo][jekyll-gh]. If you have questions, you can ask them on [Jekyll Talk][jekyll-talk].
+
+[jekyll-docs]: http://jekyllrb.com/docs/home
+[jekyll-gh]:   https://github.com/jekyll/jekyll
+[jekyll-talk]: https://talk.jekyllrb.com/
