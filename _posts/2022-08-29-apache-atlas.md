@@ -10,5 +10,7 @@ author: # 작성자
 
 test image 넣기
 이미지 넣기
-<img src="/image/atlas-banner.png" alt="test" style="height: 100px; width:100px;"/>
+
+
+<img src="/image/atlas-banner.png" alt="test" style="height: 404px; width:316px;"/>
 
