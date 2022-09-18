@@ -14,7 +14,7 @@ Mysql에 Hive metastore DB를 생성하여 hive table을 관리하면, 기본적
 
 다음의 과정은
 
-https://heum-story.tistory.com/34
+[https://heum-story.tistory.com/34]
 
 
 ```
@@ -60,3 +60,10 @@ show full columns from COMPLETED_COMPACTIONS;
 show full columns from COMPLETED_TXN_COMPONENTS;
 show full columns from CTLGS;
 ```
+
+
+
+
+
+
+[https://heum-story.tistory.com/34]: https://heum-story.tistory.com/34

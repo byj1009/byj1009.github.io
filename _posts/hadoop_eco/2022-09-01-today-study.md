@@ -8,5 +8,7 @@ author: # 작성자
 #toc : true #Table of Contents
 ---
 
+hive table
+
 
 beeline -u "jdbc:hive2://byuncdp03.goodmit.co.kr:10000/default;AuthMech=1;KrbRealm=GOODMIT.COM;KrbHostFQDN=byuncdp03.goodmit.co.kr;KrbServiceName=hive"
