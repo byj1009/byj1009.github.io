@@ -61,7 +61,7 @@ done
 
 exit 0
 ```
-<img src="/image/shell_image.png" alt="bash shell script" style="height: 100px; width:100px;"/>
+<img src="/image/shell_image.png" alt="bash shell script" style="height: 250px; width:250px;"/>
 
 
 <aside>
