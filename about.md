@@ -2,7 +2,6 @@
 layout: page
 title: About
 permalink: /about/
-toc : true #Table of Contents
 ---
 
 # 무엇이든 해내고 마는, 도전하는 엔지니어 변영준입니다.
