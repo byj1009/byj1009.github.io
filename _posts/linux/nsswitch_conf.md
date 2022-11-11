@@ -8,12 +8,11 @@ author: # 작성자
 #toc : true #Table of Contents
 ---
 
-빅데이터 플랫폼을 구축하기 위해서는 서버간 Host 정보를 등록해주어야 한다.
+# nssswitch.conf
+Name Service Switch Configuration
+Name Service와 관련된 설정을 할 수 있는 설정파일로, /etc/nsswitch.conf 경로에 있다.
 
 
-
-
-가장 간단하게 서버의 host정보를 등록하기 위해서는 /etc/hosts 파일에 해당 IP와 Domain 정보를 등록해서 서버간 Host정보를 등록할 수 있다.
 
 ```
 #

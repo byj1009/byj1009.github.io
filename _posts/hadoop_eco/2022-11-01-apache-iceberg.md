@@ -69,12 +69,20 @@ date=20180513/hour=19 → hdfs:/…/date=20180513/hour=19 (HDFS 파일 시스템
 
 아이스버그의 가장 큰 특징은, 시간의 변화에 따른 테이블 내의 모든 파일들의 변화를 추적 할 수 있는 것이다. 아이스버그에서는 Hbase와 같이 Snapshot을 활용해 테이블의 파일 정보를 기록한다. 각 Write, Commit 작업이 수행될 때 새로운 Snapshot이 생성된다.
 
-<img src="/image/iceberg_snapshot1.png" alt="test" style="height: 200px; width:240px;"/>
+<img src="/image/iceberg_snapshot1.png" alt="test" style="height: 200px; width:360px;"/>
 
 아이스버그의 테이블 정보를 읽을 때는, 가장 최신의 Snapshot 정보를 활용해 Read작업을 수행하며, Write작업이 발생하면 새로운 Snapshot이 생성된다. 이러한 작업은 동시에 수행이 가능하다.
 
 
-<img src="/image/iceberg_snapshot2.png" alt="test" style="height: 200px; width:240px;"/>
+<img src="/image/iceberg_snapshot2.png" alt="test" style="height: 200px; width:360px;"/>
 
 
 Iceberg 설정 정보
+[https://iceberg.apache.org/docs/latest/configuration/][Configuration]
+[https://iceberg.apache.org/docs/latest/][Introduction]
+
+
+[Configuration] : https://iceberg.apache.org/docs/latest/configuration/
+[Introduction] : https://iceberg.apache.org/docs/latest/
+
+
