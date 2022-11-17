@@ -19,7 +19,7 @@ SED(Streamlined Editor)는 Unix에서 텍스트를 분해하거나 변환하기 
 
 그래서 내부적으로 특수한 저장 공간인 버퍼를 사용합니다. 두 가지 버퍼는 패턴 버퍼(패턴 스페이스라고도 합니다)와 홀드 버퍼(홀드 스페이스라고도 합니다)입니다.
 
-<img src="/image/streamlined_editor.png" alt="test" style="height: 200px; width:240px;"/>
+<img src="/image/streamlined_editor.png" alt="test" style="height: 400px; width:480px;"/>
 
 1) 라인을 읽어 Pattern Space에 넣는다.
 2) Pattern Space의 sed 명령을 실행한다.
@@ -37,15 +37,27 @@ sed -i "s/SELINUX=enforcing/SELINUX=disabled/g" /etc/selinux/config
 
 sed options
 -n
+
 -e
+
 -f
+
 --follow-symlinks
+
 -i
+
 -c
+
 -b
+
 -l N
+
 --posix
+
 -r
+
 -s
+
 -u
+
 -z
