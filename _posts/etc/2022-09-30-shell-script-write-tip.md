@@ -64,13 +64,12 @@ exit 0
 <img src="/image/shell_image.png" alt="bash shell script" style="height: 250px; width:250px;"/>
 
 
-<aside>
-💡 기본적으로 shell script는 공백을 기준으로 해석을 함. 공백을 문자로 인식하기 위해서는 별도의 설정이 필요!
-spacke=”space string” 에서 공백을 문자로 인식 시키기 위해서는 변수 호출시에 “” 를 사용하여야 한다.
+  <aside>
+  💡 기본적으로 shell script는 공백을 기준으로 해석을 함. 공백을 문자로 인식하기 위해서는 별도의 설정이 필요!
+  spacke=”space string” 에서 공백을 문자로 인식 시키기 위해서는 변수 호출시에 “” 를 사용하여야 한다.
 
-if [ ${space} = "space string" ]; then        >>        if [ "${space}" = "space string" ]; then
-
-</aside>
+  if [ ${space} = "space string" ]; then        >>        if [ "${space}" = "space string" ]; then
+  </aside>
 
 4). 함수 사용
 
@@ -131,8 +130,10 @@ export MY_TMPDIR
 8). 긴 스크립트에 대해 항상 디버깅 수행
 
 ---
+### Reference
 
-Reference
 [https://ko.linux-console.net/?p=2112#gsc.tab=0](https://ko.linux-console.net/?p=2112#gsc.tab=0)
+
 [[ShellScript] 쉘 스크립트 사용법 (변수를 사용하는 법)](https://shlee1990.tistory.com/917)
+
 [https://chanchan-father.tistory.com/802](https://chanchan-father.tistory.com/802)

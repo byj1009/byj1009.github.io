@@ -77,12 +77,14 @@ date=20180513/hour=19 → hdfs:/…/date=20180513/hour=19 (HDFS 파일 시스템
 <img src="/image/iceberg_snapshot2.png" alt="test" style="height: 200px; width:360px;"/>
 
 
-Iceberg 설정 정보
-[https://iceberg.apache.org/docs/latest/configuration/][Configuration]
-[https://iceberg.apache.org/docs/latest/][Introduction]
+---
+### Iceberg 설정 정보
+[https://iceberg.apache.org/docs/latest/configuration/](Configuration)
+
+[https://iceberg.apache.org/docs/latest/](Introduction)
 
 
-[Configuration] : https://iceberg.apache.org/docs/latest/configuration/
-[Introduction] : https://iceberg.apache.org/docs/latest/
+[Configuration]: https://iceberg.apache.org/docs/latest/configuration/
+[Introduction]: https://iceberg.apache.org/docs/latest/
 
 
