@@ -5,14 +5,13 @@ tags: [Apache, Hadoop, HDFS, 하둡, Cloudera, study] #태그 설정
 categories: Study #카테고리 설정
 author: # 작성자
   - Byungineer
-#toc : true #Table of Contents
+toc : true #Table of Contents
 ---
 
 Cloudera Data Platform을 다루며, Hadoop Ecosystem의 모체가 되는 Hadoop의 구조, 특징 및 기능에 대해 개념을 확실하게 가져가기 위해 내용 정리를 해본다.
 
-## Hadoop's Architecture
-### Hadoop 버전별 특징
-Apache Hadoop은 현재 Ver3로, 2011년에 Hadoop(ver1)이 정식 발표된 이후로 구조적, 기능적인 발전이 있었다. 핵심적인 버전별 특징에 대해 간략하게 정리해본다.
+## Hadoop 버전별 특징
+Apache Hadoop은 현재 Ver3로, 2011년에 Hadoop(ver1)이 정식 발표된 이후로 구조적, 기능적인 발전이 있었다. 핵심적인 버전별 특징에 대해 정리하며 Hadoop의 특징을 간략하게 살펴보자.
 
 - Hadoop v1 : 
   - 분산저장(HDFS) : 네임노드(Namenode) + 데이터노드(Datanode)
@@ -34,25 +33,62 @@ Apache Hadoop은 현재 Ver3로, 2011년에 Hadoop(ver1)이 정식 발표된 이
   + YARN은 2006년 야후에서 개발되었고, Hadoop에 적용된 것은 2012년.
   + 또한 YARN 아키텍처에서는 MR로 구현된 작업이 아니어도 컨테이너를 할당 받아서 동작할 수 있기 때문에 Spark, HBase, Storm 등 다양한 컴포넌트들을 실행할 수 있습니다.
   </aside>
-  
+
 - Hadoop v3 : 
   - 이레이져 코딩(Erasure Coding) : Parity블록을 생성해 기존의 3벌복제를 통한 fault-tolerant를 개선. Hadoop v2의 3벌복제가 200%의 디스크사용량이라면 Hadoop V3의 Erasure Coding은 150%사용.
   - YARN 타임라인서비스 v2 : [The YARN Timeline Service v.2](yarn_timelinev2)
   - Namenode HA 2대 이상지원
   - Ozone
 
+<img src="/image/erasure.png" alt="erasure_coding" style="height: 300px; width:700px;"/>
+
+---
+
+## Hadoop's Architecture
+
+## HDFS
+하둡 분산 파일 시스템(HDFS, Hadoop Distributed File System)은 상용 하드웨어에서 실행되도록 설계된 분산 파일 시스템이다. HDFS는 내결함성이 뛰어나며 저렴한 하드웨어에 배포되도록 설계되었습니다. HDFS는 애플리케이션 데이터에 대한 높은 처리량 액세스를 제공하며, 데이터 세트가 큰 애플리케이션에 적합합니다. HDFS는 파일 시스템 데이터에 대한 스트리밍 액세스를 가능하게 하기 위해 몇 가지 POSIX 요구 사항을 완화합니다. HDFS는 원래 아파치 너치 웹 검색 엔진 프로젝트를 위한 인프라로 구축되었다. HDFS는 이제 아파치 하둡 하위 프로젝트이다.
+
+### 특징
+- 블록 단위 저장
+- 블록 복제를 이용한 장애 복구
+- 읽기 중심
+- 데이터 지역성
 
 
+<img src="/image/hdfsarchitecture.png" alt="hdfsarchitecture.png" style="height: 300px; width:700px;"/>
 
+- HDFS: Namenode + Datanode
+  - Namenode : Metadata, Datanode 관리
+    - HDFS Metadata : 이름, 크기, 생성시간, 접근권한, 소유자&그룹, 블록위치, etc
+      - Fsimage : 네임스페이스와 블록 정보
+      - Edits file : 파일의 생성, 삭제에 따른 트랜잭션 로그, 1. 메모리에 저장, 2. Namenode dfs.name.dir 경로에 저장
+  - Datanode : 블록단위의 파일 저장
 
-YARN 아키텍처의 작업의 처리 단위는 컨테이너입니다. 작업에 제출되면 애플리케이션 마스터가 생성되고, 애플리케이션 마스터가 리소스 매니저에 자원을 요청하여 실제 작업을 담당하는 컨테이너를 할당받아 작업을 처리합니다. 컨테이너는 작업이 요청되면 생성되고, 작업이 완료되면 종료되기 때문에 클러스터를 효율적으로 사용할 수 있습니다.
+## YARN
+YARN(Yet Another Resource Negotiator)은 하둡2에서 도입한 클러스터 리소스 관리 및 애플리케이션 라이프 사이클 관리를 위한 아키텍처. YARN의 기본 아이디어는 자원 관리와 작업 스케줄링/모니터링의 기능을 별도의 데몬으로 나누는 것이다.
 
+<img src="/image/yarnarchitecture.png" alt="hdfsarchitecture.png" style="height: 300px; width:700px;"/>
 
+- YARN : Resource Manager + Node Manager, AM(Application Master) + Container
 
-자원관리와 애플리케이션 관리의 분리를 통해 클러스터당 최대 만개의 노드를 등록할 수 있습니다.
-
+### YARN 기능 및 특징
+- 자원관리
+  - Node Manager:  클러스터의 각 노드마다 실행되어 현재 노드의 자원 상태를 관리하고, Resource Manager에 현재 자원 상태를 보고합니다.
+  - Resource Manager: Node Manager에서 전달받은 정보를 이용하여 클러스터 전체의 자원을 관리. 자원 사용 상태를 모니터링하고, Application Master에서 자 자원을 요청시 유휴 자원을 할당.
+  - Scheduler : 자원 분배 규칙 설정
+- Life cycle 관리
+  1. 클라이언트가 리소스 매니저에 애플리케이션을 제출
+  2. 리소스 매니저는 비어 있는 노드에서 애플리케이션 마스터를 실행. 
+  3. 애플리케이션 마스터는 작업 실행을 위한 자원을 리소스 매니저에 요청하고
+  4. 자원을 할당 받아서 각 노드에 컨테이너를 실행하고, 실제 작업을 진행합니다. 
+  5. 컨테이너에서 작업이 종료되면 결과를 애플리케이션 마스터에게 알리고 애플리케이션 마스터는 모든 작업이 종료되면 리소스매니저에 알리고 자원을 해제합니다.
 
 ---
 ### reference
+[https://hadoop.apache.org/docs/stable/hadoop-yarn/hadoop-yarn-site/TimelineServiceV2.html](yarn_timelinev2)
+
+[https://wikidocs.net](wikidocs)
 
 [yarn_timelinev2]: https://hadoop.apache.org/docs/stable/hadoop-yarn/hadoop-yarn-site/TimelineServiceV2.html
+[wikidocs]: https://wikidocs.net/22766
