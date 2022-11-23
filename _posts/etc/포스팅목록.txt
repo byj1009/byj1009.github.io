@@ -1,0 +1,13 @@
+erasure coding
+
+차후에 더 작성.
+리소스매니저
+https://kadensungbincho.tistory.com/38
+노드매니저
+https://kadensungbincho.tistory.com/43
+
+
+Ranger, Solr Spool 에 대하여.
+동작 원리가 어떻게 되는 걸까... 로그가 왜 따로 남는건지 확인.
+
+invalide data <> refresh  ::::: hive metadata
