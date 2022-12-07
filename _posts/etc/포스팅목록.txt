@@ -14,3 +14,11 @@ invalide data <> refresh  ::::: hive metadata
 
 
 python coding convention
+
+tls 암호화 알고리즘...
+
+sslciphersuites
+
+httpd 통신 원리
+
+sslciphersuites
