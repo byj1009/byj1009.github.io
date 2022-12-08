@@ -2,7 +2,7 @@
 layout: post
 title: "Python 가상환경 구성" #게시물 이름
 tags: [Data Engineering, Data Engineer, 데이터엔지니어, Big data, python, python3, Visual Studio, vscode, 가상환경, Venv, Virtual, study] #태그 설정
-categories: python_dev #카테고리 설정
+categories: python #카테고리 설정
 author: # 작성자
   - Byungineer
 #toc : true #Table of Contents
