@@ -1,5 +1,6 @@
 ---
-layout: post
+layout: archive-taxonomies
+type: categories
 title: "Python SQLAlchemy" #게시물 이름
 tags: [Data Engineering, Data Engineer, 데이터엔지니어, Big data, python, python3, ,sqlalchemy, ORM, ,dbapi, study] #태그 설정
 categories: python #카테고리 설정
