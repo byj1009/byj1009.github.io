@@ -1,13 +1,12 @@
 ---
 layout: post
 title: "Python 가상환경 구성" #게시물 이름
-tags: [Data Engineering, Data Engineer, 데이터엔지니어, Big data, python, python3, Visual Studio, vscode, 가상환경, Venv, Virtual, study] #태그 설정
-categories: python_dev #카테고리 설정
+tags: [Data Engineering, Data Engineer, Big data, python, python3, Visual Studio, vscode, Venv, Virtual, study] #태그 설정
+categories: python #카테고리 설정
 author: # 작성자
   - Byungineer
 #toc : true #Table of Contents
 ---
-
 
 ### Python venv가 무엇인가?
 파이썬을 시작하기에 앞서 우리는 파이썬 가상환경을 생성해야 한다. 파이썬을 입문하기 위해서 관련서적을 살펴보면 빠지지 않고 나오는 내용이 Virtual Environment, 가상환경을 생성하는 것으로 시작한다. 
