@@ -1,7 +1,8 @@
 ---
 layout: post
 title: "Python SQLAlchemy SQL문 예시" #게시물 이름
-tags: [Data Engineering, Data Engineer, Big data, python, python3, ,sqlalchemy, ORM, ,dbapi, study] #태그 설정
+#tags: [Data Engineering, Data Engineer, 데이터엔지니어, Big data, python, python3, ,sqlalchemy, ORM, ,dbapi, study] #태그 설정
+tags: [pyhton, programming, language, 파이썬] #태그 설정
 categories: python #카테고리 설정
 author: # 작성자
   - Byungineer
@@ -75,9 +76,11 @@ db.delete(table_name).where(condition)
 ```
 table_name.drop(engine) #drops a single table
 metadata.drop_all(engine) #drops all the tables in the database
-```
+
 # fetchall() 함수. 레코드를 배열 형식으로 저장, 만약 메모리가 부족할 때는?
 # fetchmany() 데이터가 커서 OOM이 일어날 수 있을 때는, 최적화된 갯수의 열만 가져옴
+```
+
 ---
 
 ### reference
