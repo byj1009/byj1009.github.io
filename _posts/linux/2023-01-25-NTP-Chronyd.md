@@ -64,3 +64,13 @@ clock resolution : 10시 20분 59초라는 시간을 표현할 때, 사실은 10
 
 ### Leap status [ Normal ]
 Normal, Insert second, Delete second or Not synchronized와 같은 NTP 설정 상태.
+
+
+
+---
+### reference
+
+[https://jfearn.fedorapeople.org](Fedorapeople.org)
+[Fedorapeople.org]: https://jfearn.fedorapeople.org/fdocs/en-US/Fedora_Draft_Documentation/0.1/html/System_Administrators_Guide/sect-Checking_if_chrony_is_synchronized.html
+
+
