@@ -109,12 +109,12 @@ default : Seconds
 ---
 ### reference
 
-[https://jfearn.fedorapeople.org](Fedorapeople.org)
-[Fedorapeople.org]: https://jfearn.fedorapeople.org/fdocs/en-US/Fedora_Draft_Documentation/0.1/html/System_Administrators_Guide/sect-Checking_if_chrony_is_synchronized.html
+[https://jfearn.fedorapeople.org][Fedorapeople.org]
+[https://chrony.tuxfamily.org][chrony.tuxfamily.org]
 
-[https://chrony.tuxfamily.org](chrony.tuxfamily.org)
+
+[Fedorapeople.org] : https://jfearn.fedorapeople.org/fdocs/en-US/Fedora_Draft_Documentation/0.1/html/System_Administrators_Guide/sect-Checking_if_chrony_is_synchronized.html
 [chrony.tuxfamily.org] : https://chrony.tuxfamily.org/doc/3.3/chronyc.html
 
 
 
-<span style="color:blue">some *blue* text</span>.
