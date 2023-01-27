@@ -114,3 +114,7 @@ default : Seconds
 
 [https://chrony.tuxfamily.org](chrony.tuxfamily.org)
 [chrony.tuxfamily.org] : https://chrony.tuxfamily.org/doc/3.3/chronyc.html
+
+
+
+<span style="color:blue">some *blue* text</span>.
