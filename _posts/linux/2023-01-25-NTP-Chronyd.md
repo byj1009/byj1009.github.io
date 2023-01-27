@@ -20,7 +20,9 @@ chronyc sourcestats
 ```
 
 ## chronyc tracing
+
 <img src="/image/chrony1.png" alt="chrony1" style="height: 480px; width:640px;"/>
+
 <img src="/image/chrony2.png" alt="chrony2" style="height: 480px; width:640px;"/>
 
 - Reference ID [ D3E9284E (send.mx.cdnetworks.com) ]
