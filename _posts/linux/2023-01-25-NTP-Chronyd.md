@@ -21,9 +21,9 @@ chronyc sourcestats
 
 ## chronyc tracing
 
-<img src="/image/chrony1.png" alt="chrony1" style="height: 480px; width:640px;"/>
+<img src="/image/chrony1.png" alt="chrony1" style="height: 320px; width:480px;"/>
 
-<img src="/image/chrony2.png" alt="chrony2" style="height: 480px; width:640px;"/>
+<img src="/image/chrony2.png" alt="chrony2" style="height: 320px; width:480px;"/>
 
 - Reference ID [ D3E9284E (send.mx.cdnetworks.com) ]
 컴퓨터가 현재 동기화되어 있는 서버의 참조 ID 및 이름(or IP 주소).
