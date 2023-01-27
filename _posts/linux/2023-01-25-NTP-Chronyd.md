@@ -20,8 +20,8 @@ chronyc sourcestats
 ```
 
 ## chronyc tracing
-<img src="/image/chrony1.png" alt="chrony1" style="height: 240x; width:320px;"/>
-<img src="/image/chrony2.png" alt="chrony2" style="height: 240px; width:320px;"/>
+<img src="/image/chrony1.png" alt="chrony1" style="height: 480px; width:640px;"/>
+<img src="/image/chrony2.png" alt="chrony2" style="height: 480px; width:640px;"/>
 
 - Reference ID [ D3E9284E (send.mx.cdnetworks.com) ]
 컴퓨터가 현재 동기화되어 있는 서버의 참조 ID 및 이름(or IP 주소).
@@ -67,7 +67,7 @@ Normal, Insert second, Delete second or Not synchronized와 같은 NTP 설정 �
 
 
 ## chronyc Sources -v
-<img src="/image/chrony3.png" alt="chrony3" style="height: 240x; width:320px;"/>
+<img src="/image/chrony3.png" alt="chrony3" style="height: 480x; width:640px;"/>
 - Poll
 소스가 폴링될 때, 초당 이진 로그 알고리즘의 간격으로 표시합니다. 따라서 값이 6이면 64초마다 측정이 수행되고 있음을 나타냅니다. chronyd는 일반적인 조건에 따라 폴링 속도를 자동으로 변경합니다.
 
@@ -87,7 +87,8 @@ ex) 377 -> 1111 1111 (2)인데, 패킷전달 정상(1) 에러(0). >> 따라서 R
 
 ## chronyc sourcestats
 sourcestats 명령은 현재 크로니드에서 검사 중인 각 소스에 대한 drift rate 및 추정 프로세스에 대한 offset 정보를 표시
-<img src="/image/chrony3.png" alt="chrony4" style="height: 240x; width:320px;"/>
+
+<img src="/image/chrony3.png" alt="chrony4" style="height: 480x; width:640px;"/>
 
 - NP
 서버에 대해 현재 보존 중인 샘플 포인트 수. 즉, 일정 주기로 NTP server로 부터 받아온 샘플(시간)의 갯수
