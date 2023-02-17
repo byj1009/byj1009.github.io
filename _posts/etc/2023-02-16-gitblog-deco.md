@@ -66,6 +66,6 @@ Sitemap: https://byj1009.github.io/sitemap.xml
 [https://www.ascentkorea.com/][ascentkorea]
 [https://yenarue.github.io/tip/2020/04/30/Search-SEO/][yenarue]
 
-    
+[sitemap]: https://github.com/byj1009/byj1009.github.io/blob/4fa8af2025abf18de07c8094607b8c00ba1ae592/sitemap.xml
 [ascentkorea]: https://www.ascentkorea.com/what-is-robots-txt-sitemap-xml/
 [yenarue]: https://yenarue.github.io/tip/2020/04/30/Search-SEO/
