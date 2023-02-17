@@ -26,8 +26,7 @@ sitemap.xml은 사이트에 방문하는 검색엔진의 크롤러에게 컨텐�
 
    
   <aside>
-  💡 <priority>, <changefreq>와 같은 값은 포털사이트의 검색엔진 설정에 따라 무시가 될 수 있다.
-  
+  💡 priority, changefreq와 같은 값은 포털사이트의 검색엔진 설정에 따라 무시가 될 수 있다.
   </aside>  
 
 ```
@@ -62,14 +61,17 @@ sitemap.xml은 사이트에 방문하는 검색엔진의 크롤러에게 컨텐�
 ```
 
 
-<img src="/image/sitemap_xml.png" alt="sitemap" style="height: 500px; width:250px;"/>
+<img src="/image/sitemap_xml.png" alt="sitemap" style="height: 2000px; width:1250px;"/>
 
 < 실제 sitemap xml 파일 모습 >
 
 위 사진에서 보이는 것 처럼, 블로그의 모든 글의 URL이 등록되어 있다. sitemap.xml을 검색엔진에 제출한다고 해서 모든 제출된 웹페이지(URL)을 색인해준다는 보장이 없다. 또한, 검색엔진이 웹 페이지를 크롤링하여 URL을 발견하는 메커니즘을 보완하기 위한 파일이지, 그 기능을 전부 대체하는 파일은 아니다.
 
+
 ### robots.txt 생성하기
+
 robots.txt는 검색엔진의 크롤러가 웹(자신의 Gitblog)에 접근할 때 지켜야하는 규칙과 정보를 명시하기 위한 파일이다. 디렉토리 구조인 GitHub Blog에서 `특정 디렉토리(일기, 다이어리, etc), 컨텐츠`를 크롤링하지 않도록 규칙을 명시하는 것이다.
+
 
 다음과 같은 컨텐츠의 크롤링을 금지하기 위해 robots.txt를 활용한다.
 - 개인 정보 페이지
@@ -84,3 +86,14 @@ Allow: /
 Disallow: /scripts
 Sitemap: https://byj1009.github.io/sitemap.xml
 ```
+
+
+
+---
+### Reference
+[https://www.ascentkorea.com/][ascentkorea]
+[https://yenarue.github.io/tip/2020/04/30/Search-SEO/][yenarue]
+
+    
+[ascentkorea]: https://www.ascentkorea.com/what-is-robots-txt-sitemap-xml/
+[yenarue]: https://yenarue.github.io/tip/2020/04/30/Search-SEO/
