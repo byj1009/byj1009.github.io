@@ -79,9 +79,8 @@ date=20180513/hour=19 → hdfs:/…/date=20180513/hour=19 (HDFS 파일 시스템
 
 ---
 ### Iceberg 설정 정보
-[https://iceberg.apache.org/docs/latest/configuration/](Configuration)
-
-[https://iceberg.apache.org/docs/latest/](Introduction)
+- [https://iceberg.apache.org/docs/latest/configuration/][Configuration]
+- [https://iceberg.apache.org/docs/latest/][Introduction]
 
 
 [Configuration]: https://iceberg.apache.org/docs/latest/configuration/

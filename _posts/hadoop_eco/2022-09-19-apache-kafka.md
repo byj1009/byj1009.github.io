@@ -308,5 +308,9 @@ kafka-console-consumer --topic test-events --from-beginning --bootstrap-server k
 ```
 
 Solr-infra Time to Live 변경하는 방법
+---
+### reference
+- [https://docs.cloudera.com/cloudera-manager-ibm/7.2.3/installation/topics/cdpdc-additional-steps-ranger.html][cloudera]
 
-[https://docs.cloudera.com/cloudera-manager-ibm/7.2.3/installation/topics/cdpdc-additional-steps-ranger.html](https://docs.cloudera.com/cloudera-manager-ibm/7.2.3/installation/topics/cdpdc-additional-steps-ranger.html)
+
+[cloudera]: https://docs.cloudera.com/cloudera-manager-ibm/7.2.3/installation/topics/cdpdc-additional-steps-ranger.html

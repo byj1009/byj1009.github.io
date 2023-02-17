@@ -86,9 +86,8 @@ YARN(Yet Another Resource Negotiator)은 하둡2에서 도입한 클러스터 �
 
 ---
 ### reference
-[https://hadoop.apache.org/docs/stable/hadoop-yarn/hadoop-yarn-site/TimelineServiceV2.html](yarn_timelinev2)
-
-[https://wikidocs.net](wikidocs)
+- [https://hadoop.apache.org/docs/stable/hadoop-yarn/hadoop-yarn-site/TimelineServiceV2.html][yarn_timelinev2]
+- [https://wikidocs.net](wikidocs)
 
 [yarn_timelinev2]: https://hadoop.apache.org/docs/stable/hadoop-yarn/hadoop-yarn-site/TimelineServiceV2.html
 [wikidocs]: https://wikidocs.net/22766

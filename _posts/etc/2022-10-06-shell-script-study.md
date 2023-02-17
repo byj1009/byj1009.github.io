@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Bash Shell Scripts 명령어 결과 변수 저장" #게시물 이름
+title: "[Linux] Bash Shell Scripts 명령어 결과 변수 저장" #게시물 이름
 tags: [bash, script, shell, linux, automation] #태그 설정
 categories: Study #카테고리 설정
 author: # 작성자
