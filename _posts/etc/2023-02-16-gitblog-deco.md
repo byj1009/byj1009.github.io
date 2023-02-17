@@ -61,9 +61,7 @@ sitemap.xml은 사이트에 방문하는 검색엔진의 크롤러에게 컨텐�
 ```
 
 
-<img src="/image/sitemap_xml.png" alt="sitemap" style="height: 2000px; width:1250px;"/>
-
-< 실제 sitemap xml 파일 모습 >
+<img src="/image/sitemap_xml.png" alt="sitemap" style="height: 800px; width:1250px;"/>
 
 위 사진에서 보이는 것 처럼, 블로그의 모든 글의 URL이 등록되어 있다. sitemap.xml을 검색엔진에 제출한다고 해서 모든 제출된 웹페이지(URL)을 색인해준다는 보장이 없다. 또한, 검색엔진이 웹 페이지를 크롤링하여 URL을 발견하는 메커니즘을 보완하기 위한 파일이지, 그 기능을 전부 대체하는 파일은 아니다.
 
@@ -80,6 +78,7 @@ robots.txt는 검색엔진의 크롤러가 웹(자신의 Gitblog)에 접근할 �
 - +@ 사이트를 리뉴얼할 때 임시적으로 컨텐츠를 검색되지 않도록.
 
 
+robots.txt
 ```
 User-agent: *
 Allow: /
