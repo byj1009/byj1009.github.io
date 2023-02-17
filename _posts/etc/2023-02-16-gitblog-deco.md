@@ -29,40 +29,12 @@ sitemap.xml은 사이트에 방문하는 검색엔진의 크롤러에게 컨텐�
   💡 priority, changefreq와 같은 값은 포털사이트의 검색엔진 설정에 따라 무시가 될 수 있다.
   </aside>  
 
-```txt
----
----
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  {% for post in site.posts %}
-    <url>
-      <loc>{{ site.url }}{{ post.url }}</loc>
-      {% if post.lastmod == null %}
-        <lastmod>{{ post.date | date_to_xmlschema }}</lastmod>
-      {% else %}
-        <lastmod>{{ post.lastmod | date_to_xmlschema }}</lastmod>
-      {% endif %}
 
-      {% if post.sitemap.changefreq == null %}
-        <changefreq>daily</changefreq>
-      {% else %}
-        <changefreq>{{ post.sitemap.changefreq }}</changefreq>
-      {% endif %}
-
-      {% if post.sitemap.priority == null %}
-          <priority>0.5</priority>
-      {% else %}
-        <priority>{{ post.sitemap.priority }}</priority>
-      {% endif %}
-
-    </url>
-  {% endfor %}
-</urlset>
-
-```
+sitemap.xml을 자동으로 갱신하기 위한 코드는 다음 [sitemap.xml][sitemap]파일을 활용하면 된다.
+~~코드 자체를 올리고 싶었으나, 웹페이지에서 자동으로 변환되어 보여지기 때문에 github 링크로 대체 합니다.~~
 
 
-<img src="/image/sitemap_xml.png" alt="sitemap" style="height: 800px; width:1250px;"/>
+<img src="/image/sitemap_xml.png" alt="sitemap" style="height: 600px; width:850px;"/>
 
 위 사진에서 보이는 것 처럼, 블로그의 모든 글의 URL이 등록되어 있다. sitemap.xml을 검색엔진에 제출한다고 해서 모든 제출된 웹페이지(URL)을 색인해준다는 보장이 없다. 또한, 검색엔진이 웹 페이지를 크롤링하여 URL을 발견하는 메커니즘을 보완하기 위한 파일이지, 그 기능을 전부 대체하는 파일은 아니다.
 
