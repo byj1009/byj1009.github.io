@@ -29,8 +29,9 @@ sitemap.xml은 사이트에 방문하는 검색엔진의 크롤러에게 컨텐�
   💡 priority, changefreq와 같은 값은 포털사이트의 검색엔진 설정에 따라 무시가 될 수 있다.
   </aside>  
 
-```
-
+```txt
+---
+---
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   {% for post in site.posts %}
