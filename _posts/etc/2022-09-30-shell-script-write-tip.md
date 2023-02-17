@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Bash Shell Scripts 작성 팁 정리" #게시물 이름
+title: "[Linux] Bash Shell Scripts 작성 팁 정리" #게시물 이름
 tags: [bash, script, shell, linux, automation] #태그 설정
 categories: Study #카테고리 설정
 author: # 작성자
@@ -132,8 +132,12 @@ export MY_TMPDIR
 ---
 ### Reference
 
-[https://ko.linux-console.net/?p=2112#gsc.tab=0](https://ko.linux-console.net/?p=2112#gsc.tab=0)
+- [https://ko.linux-console.net/?p=2112#gsc.tab=0][linux-console]
+- [[ShellScript] 쉘 스크립트 사용법 (변수를 사용하는 법)][shlee1990]
+- [https://chanchan-father.tistory.com/802][chanchan-father]
 
-[[ShellScript] 쉘 스크립트 사용법 (변수를 사용하는 법)](https://shlee1990.tistory.com/917)
 
-[https://chanchan-father.tistory.com/802](https://chanchan-father.tistory.com/802)
+
+[linux-console]: https://ko.linux-console.net/?p=2112#gsc.tab=0
+[shlee1990]: https://shlee1990.tistory.com/917
+[chanchan-father]: https://chanchan-father.tistory.com/802
