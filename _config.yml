@@ -48,6 +48,6 @@ baseurl: ""
 url: "https://byj1009.github.io"
 
 #Skin type 변경
-skin: midnight
+skin: daylight
 
 future : true
