@@ -1,12 +1,7 @@
 ---
 layout: post
-title: "Python SQLAlchemy" #게시물 이름
-<<<<<<< HEAD
-tags: [Data Engineering, Data Engineer, Big data, python, python3, ,sqlalchemy, ORM, ,dbapi, study] #태그 설정
-=======
-#tags: [Data Engineering, Data Engineer, 데이터엔지니어, Big data, python, python3, ,sqlalchemy, ORM, ,dbapi, study] #태그 설정
-tags: [pyhton, programming, language, 파이썬] #태그 설정
->>>>>>> 86715b3ea4848e2712f3f3f32d2e9064646bc187
+title: "[Python] Python SQLAlchemy" #게시물 이름
+tags: [Data Engineering, python3, sqlalchemy, ORM, ,dbapi, study] #태그 설정
 categories: python #카테고리 설정
 author: # 작성자
   - Byungineer

@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Python SQLAlchemy SQL문 예시" #게시물 이름
+title: "[Python] Python SQLAlchemy SQL문 예시" #게시물 이름
 #tags: [Data Engineering, Data Engineer, 데이터엔지니어, Big data, python, python3, ,sqlalchemy, ORM, ,dbapi, study] #태그 설정
 tags: [pyhton, programming, language, 파이썬] #태그 설정
 categories: python #카테고리 설정

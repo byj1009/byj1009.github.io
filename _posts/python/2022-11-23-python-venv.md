@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Python 가상환경 구성" #게시물 이름
+title: "[Python] Python 가상환경 구성" #게시물 이름
 tags: [Data Engineering, Data Engineer, Big data, python, python3, Visual Studio, vscode, Venv, Virtual, study] #태그 설정
 categories: python #카테고리 설정
 author: # 작성자
