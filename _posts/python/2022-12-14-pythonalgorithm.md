@@ -1,9 +1,8 @@
 ---
 layout: post
-title: "[Programmers Python] Lv2 최댓값과 최솟값" #게시물 이름
-#tags: [Data Engineering, Data Engineer, 데이터엔지니어, Big data, python, python3, ,sqlalchemy, ORM, ,dbapi, study] #태그 설정
+title: "[Python] Lv2 최댓값과 최솟값" #게시물 이름
 tags: [pyhton, prgorammers, 파이썬] #태그 설정
-categories: python #카테고리 설정
+categories: Algorithm #카테고리 설정
 author: # 작성자
   - Byungineer
 #toc : true #Table of Contents
@@ -15,7 +14,7 @@ _문자열 s에는 공백으로 구분된 숫자들이 저장되어 있습니다
 예를들어 s가 "1 2 3 4"라면 "1 4"를 리턴하고, "-1 -2 -3 -4"라면 "-4 -1"을 리턴하면 됩니다._
 
 제한 조건
-s에는 둘 이상의 정수가 공백으로 구분되어 있습니다.
+- s에는 둘 이상의 정수가 공백으로 구분되어 있습니다.
 
 입출력 예
 
