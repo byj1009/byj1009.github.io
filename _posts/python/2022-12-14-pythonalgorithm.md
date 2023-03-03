@@ -5,7 +5,8 @@ tags: [pyhton, programmers, Algorithm] #태그 설정
 categories: Algorithm #카테고리 설정
 author: # 작성자
   - Byungineer
-#toc : true #Table of Contents
+toc : true #Table of Contents
+comments : true
 ---
 
 <https://school.programmers.co.kr/learn/courses/30/lessons/12939>
