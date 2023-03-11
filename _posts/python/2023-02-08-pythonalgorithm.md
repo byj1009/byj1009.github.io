@@ -6,6 +6,7 @@ categories: Algorithm3 #카테고리 설정
 author: # 작성자
   - Byungineer
 #toc : true #Table of Contents
+published: true
 ---
 
 ## 괄호 회전하기
