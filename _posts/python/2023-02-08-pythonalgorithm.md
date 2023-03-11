@@ -2,7 +2,7 @@
 layout: post
 title: "[Python] 괄호 회전하기 / 행렬의 곱셈" #게시물 이름
 tags: [pyhton, programmers, Algorithm] #태그 설정
-categories: Algorithm3 #카테고리 설정
+categories: Algorithm #카테고리 설정
 author: # 작성자
   - Byungineer
 #toc : true #Table of Contents
