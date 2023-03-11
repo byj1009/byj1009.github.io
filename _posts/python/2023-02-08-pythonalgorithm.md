@@ -97,7 +97,7 @@ def solution(s):
     return answer
 ```
 
-반례가 존재하는 풀이 `[{]}`
+반례가 존재하는 풀이 {%raw%}`[{]}`{%endraw%}
 ```python
 # 반례 !!!! [{]}
 def solution(s):
