@@ -15,9 +15,9 @@ author: # 작성자
 ```
 Error: YAML Exception reading /github/workspace/_posts/python/2022-11-28-python-sql.md: (<unknown>): did not find expected node content while parsing a flow node at line 4 column 52
 
-Liquid Exception: Liquid syntax error (line 99): Variable '{{a1}' was not properly terminated with regexp: /\}\}/ in /github/workspace/_posts/python/2023-02-15-pythonalgorithm.md
+Liquid Exception: Liquid syntax error (line 99): Variable '{% raw %} {{a1}' was not properly terminated with regexp: /\}\}/ in /github/workspace/_posts/python/2023-02-15-pythonalgorithm.md
 
-github-pages 228 | Error:  Liquid syntax error (line 99): Variable '{{a1}' was not properly terminated with regexp: /\}\}/
+github-pages 228 | Error:  Liquid syntax error (line 99): Variable '{{a1}' was not properly terminated with regexp: /\}\}/{% endraw %}
 ```
 관련 에러를 trouble shootting한 내역을 다음 포스팅에 다뤄 보겠다.
 
