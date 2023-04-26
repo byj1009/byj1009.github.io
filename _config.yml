@@ -30,6 +30,9 @@ exclude:
 
 # Jekyll SEO Tag (Optional)
 # =========================
+twitter:
+  username: ngzhio
+  card: summary
 logo: logo.png
 social:
   name: YJ
