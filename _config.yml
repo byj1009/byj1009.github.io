@@ -26,6 +26,7 @@ disqus:
 # ======
 exclude:
   - scripts/
+  - README.md
   - jekyll-theme-hamilton.gemspec
 
 # Jekyll SEO Tag (Optional)
