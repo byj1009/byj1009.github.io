@@ -1,43 +1,18 @@
 ---
 layout: post
-title: "Kubernetes Log 추출 및 Logrotate 사용 방법" #게시물 이름
-tags: [Linux, kubernetes, log, logrotate, nohup] #태그 설정
+title: "[Linux] Logrotate 사용 방법" #게시물 이름
+tags: [Linux, log, logrotate, nohup] #태그 설정
 categories: Study #카테고리 설정
 author: # 작성자
   - Byungineer
 #toc : true #Table of Contents
 ---
 
-Kubernetes의 특정 Pods의 로그를 파일로 저장하는 방법을 공부한 내용을 정리한다.   
-필자가 테스트하고 있는 환경은 Cloudera의 Cloudera Data Science Workbench(CDSW)에 내장되어 있는 K8s이며,   
-보통의 `kubernetes.io` 를 통해 다운로드 가능한 opensource k8s의 pods 로그는   
+kubernetes에서 추출한 webapp log를 logrotate를 활용해 분할 저장하는 방법을 알아보자.
 
-"/var/log/pods/{namespace}_{pod_name}/{container-name}/{count-number}.log" 에 있다.
-
-하지만, Cloudera의 CDSW default아래의 Pods들은 해당 경로에 로그를 남기지 않기 때문에, `kubectl logs` 명령어를 통해 저장해야 한다.
-
-
-## Kubernetes Pods log 추출
-
-CDSW는 K8s, Docker로 구성된 서비스로, default 네임스페이스에 서비스 운영에 필요한 pods들이 서비스 시작과 함께 자동 생성된다.   
-ex) database / web / registry / livelog / etc...
-
-### 1. log 추출
-해당 Pods의 로그를 Linux Local 파일로 저장하는 명령어는 다음과 같다.   
 ```bash
-# RBAC(Role-Based Access Control)으로 CDSW 기본 Pods들에는 Role이 바인딩 되어 있습니다.
-# 총 3개의 web pods 가 뜨기 때문에, jsonpath='{.items[0].metadata.name} 를 통한 pods 구분
-$ cat cdsw_weblog_create_command.sh 
-kubectl logs -f $(kubectl get pods -l role=web -o jsonpath='{.items[0].metadata.name}')  >  $PWD/cdsw_web1.log & \
-kubectl logs -f $(kubectl get pods -l role=web -o jsonpath='{.items[1].metadata.name}')  >  $PWD/cdsw_web2.log & \
-kubectl logs -f $(kubectl get pods -l role=web -o jsonpath='{.items[2].metadata.name}')  >  $PWD/cdsw_web3.log
-
-$ nohup sh cdsw_weblog_create_command.sh &
+kubectl logs -f $(kubectl get pods -l role=web -o jsonpath='{.items[0].metadata.name}')  >  $PWD/cdsw_web1.log
 ```   
-  <aside>
-  💡 Web pod의 로그가 실시간을 계속 저장되고 있기 때문에, Background에서 명령어가 실행 될 수 있도록 위의 설정을 했다.
-  </aside>  
-
 
 ## logrotate 사용
 
