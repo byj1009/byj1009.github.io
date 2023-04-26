@@ -3,33 +3,4 @@
 
   1. Head over to https://realfavicongenerator.net/ to add your own favicons.
   2. Customize default _includes/custom-head.html in your source directory and insert the given code snippet.
-  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
-  <script>
-    const themeToggle = document.querySelector("#theme-toggle");
-    const skins = [
-      {
-        name: "daylight",
-        filename: "{{ '/assets/css/skin-daylight.css' | relative_url }}"
-      },
-      {
-        name: "midnight",
-        filename: "{{ '/assets/css/skin-midnight.css' | relative_url }}"
-      }
-    ];
-    
-    let currentSkinIndex = skins.findIndex(skin => skin.filename === document.querySelector("link[rel='stylesheet']").getAttribute("href"));
-    
-    themeToggle.addEventListener("click", () => {
-        currentSkinIndex++;
-        if (currentSkinIndex >= skins.length) {
-            currentSkinIndex = 0;
-        }
-        
-        const skin = skins[currentSkinIndex];
-        const link = document.querySelector("link[rel='stylesheet']");
-        link.setAttribute("href", skin.filename);
-        link.setAttribute("title", skin.name);
-    });
-  </script>
-  <script async src="https://use.fontawesome.com/releases/v5.0.12/js/all.js"></script>
 {% endcomment %}
