@@ -26,14 +26,10 @@ disqus:
 # ======
 exclude:
   - scripts/
-  - README.md
   - jekyll-theme-hamilton.gemspec
 
 # Jekyll SEO Tag (Optional)
 # =========================
-twitter:
-  username: ngzhio
-  card: summary
 logo: logo.png
 social:
   name: YJ

@@ -1,0 +1,19 @@
+/* 테마 토글 버튼 */
+.theme-toggle {
+    display: inline-block;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: none;
+    background-color: transparent;
+    background-image: url('/images/dark-mode-toggle-icon.svg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 24px 24px;
+    cursor: pointer;
+  }
+  
+  .theme-toggle.dark {
+    filter: invert(1);
+  }
+  
