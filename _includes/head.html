@@ -21,7 +21,6 @@
 <link rel="stylesheet" href="{{ '/assets/css/skin.css' | relative_url }}">
 
 <!-- Begin selecting skin -->
-
 {% unless site.skin %}
   <script>
     const hour = (new Date()).getHours();
@@ -44,6 +43,6 @@
 {% endunless %}
 <!-- End selecting skin -->
 
-{% include custom-head.html %}
+<script async src="https://use.fontawesome.com/releases/v5.0.12/js/all.js"></script>
 
-{% endinclude custom-head.html %}
+{% include custom-head.html %}
