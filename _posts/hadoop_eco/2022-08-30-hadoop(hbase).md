@@ -2,7 +2,7 @@
 layout: post
 title: "Apache Hadoop & Hbase Study" #게시물 이름
 tags: [Apache, hbase, hadoop, hdfs, hive, study] #태그 설정
-categories: Study #카테고리 설정
+categories: Hadoop #카테고리 설정
 author: # 작성자
   - Byungineer
 #toc : true #Table of Contents

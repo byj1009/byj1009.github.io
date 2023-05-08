@@ -2,7 +2,7 @@
 layout: post
 title: "Chronyc 동기화 체크" #게시물 이름
 tags: [Linux, Network, NTP, Chrony, 시간동기화] #태그 설정
-categories: Study #카테고리 설정
+categories: Linux #카테고리 설정
 author: # 작성자
   - Byungineer
 #toc : true #Table of Contents

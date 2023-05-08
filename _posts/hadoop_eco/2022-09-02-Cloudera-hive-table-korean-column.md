@@ -2,7 +2,7 @@
 layout: post
 title: "Hive table에서 한글 컬럼명, 코멘트 사용하기" #게시물 이름
 tags: [Apache, Clouder, CDP, Hive, table, metastore, study] #태그 설정
-categories: Study #카테고리 설정
+categories: Hadoop #카테고리 설정
 author: # 작성자
   - Byungineer
 #toc : true #Table of Contents

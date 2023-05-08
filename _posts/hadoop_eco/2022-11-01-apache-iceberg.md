@@ -2,7 +2,7 @@
 layout: post
 title: "Apache Iceberg" #게시물 이름
 tags: [Apache, Iceberg, apache iceberg, hive, impala, table, table format, 아이스버그] #태그 설정
-categories: Study #카테고리 설정
+categories: Hadoop #카테고리 설정
 author: # 작성자
   - Byungineer
 #toc : true #Table of Contents
