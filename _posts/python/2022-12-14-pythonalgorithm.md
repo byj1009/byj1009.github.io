@@ -2,7 +2,7 @@
 layout: post
 title: "[Python] Lv2 최댓값과 최솟값" #게시물 이름
 tags: [pyhton, programmers, Algorithm] #태그 설정
-categories: Algorithm #카테고리 설정
+categories: python #카테고리 설정
 author: # 작성자
   - Byungineer
 toc : true #Table of Contents
