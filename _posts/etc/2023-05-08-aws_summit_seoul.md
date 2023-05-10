@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "[etc] AWS Summit Seoul 2023 day2 후기" #게시물 이름
-tags: [2023, AWS, summit, review, 후기] #태그 설정
+tags: [AWS, summit, review, 후기] #태그 설정
 categories: etc #카테고리 설정
 author: # 작성자
   - Byungineer
