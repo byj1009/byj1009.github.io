@@ -1,16 +1,15 @@
 ---
 layout: post
-title: "[AWS] " #게시물 이름
-tags: [gitblog, disqus, 댓글, 디스커스] #태그 설정
-categories: Github blog #카테고리 설정
+title: "[etc] AWS Summit Seoul 2023 day2 후기" #게시물 이름
+tags: [2023, AWS, summit, review, 후기] #태그 설정
+categories: etc #카테고리 설정
 author: # 작성자
   - Byungineer
 #toc : true #Table of Contents
 ---
 
-Github 블로그에 댓글을 추가하기 위한 방법으로는 `disqus`, `utterances`를 이용하면 된다. 
-본 글은 `disqus basic 버전`의 적용 과정을 포스팅하며, Jekyll template을 이용해 블로그가 구축되었기 때문에 yaml, html 파일의 내용 구성이 다를 수 있다.
-
+빅데이터 엔진니어라는 야무진 꿈을 가지고 현 회사에 입사한지 약 2년.   
+개인 일정을 조율해 외부 강연으
 
 ## disqus 설정
 
