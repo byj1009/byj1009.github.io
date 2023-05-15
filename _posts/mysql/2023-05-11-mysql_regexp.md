@@ -37,6 +37,7 @@ _정규 표현식(正規表現式, 영어: regular expression, 간단히 regexp 
 | ¦ | 선택 | 여러 식 중에서 하나를 선택한다. 예를 들어, "abc¦adc"는 abc와 adc 문자열을 모두 포함한다. |
 
 **문자 클래스**
+
 | POSIX | 비표준 | ASCII | 설명 |
 | --- | --- | --- | --- |
 | [:alnum:] |  | [A-Za-z0-9] | 영숫자 |
@@ -58,6 +59,7 @@ _정규 표현식(正規表現式, 영어: regular expression, 간단히 regexp 
 | [:xdigit:] |  | [A-Fa-f0-9] | 16진수 |
 
 ### MYSQL에서의 정규표현식 활용 예시
+
 MYSQL 8버전 이상부터는 POSIX Extended Regular Expression(ERE)를 지원(사용)한다고 명시가 되어 있다.   
 
 이해를 위해 MYSQL regexp 예시를 통해 활용 방법을 알아보자.
