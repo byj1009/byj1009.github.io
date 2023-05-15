@@ -2,7 +2,7 @@
 layout: post
 title: "[Linux] Bash Shell Scripts 작성에 사용한 문법 정리" #게시물 이름
 tags: [bash, script, shell, linux, automation, cloudera, Cloudera Data Platform, CDP, Cloudera Manager, CM] #태그 설정
-categories: Study #카테고리 설정
+categories: Linux #카테고리 설정
 author: # 작성자
   - Byungineer
 #toc : true #Table of Contents

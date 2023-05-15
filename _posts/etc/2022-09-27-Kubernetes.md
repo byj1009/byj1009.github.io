@@ -2,7 +2,7 @@
 layout: post
 title: "GCP Kubernetes 공부" #게시물 이름
 tags: [Apache, Cloudera, CDP, AWS, VPC, EC2, Instance, Public Cloud, study] #태그 설정
-categories: Study #카테고리 설정
+categories: Kubernetes #카테고리 설정
 author: # 작성자
   - Byungineer
 #toc : true #Table of Contents

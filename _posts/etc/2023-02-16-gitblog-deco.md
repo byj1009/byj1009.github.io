@@ -2,7 +2,7 @@
 layout: post
 title: "[GitBlog] 검색엔진에 등록하기" #게시물 이름
 tags: [gitblog, google, naver, 검색엔진, blog] #태그 설정
-categories: Github blog #카테고리 설정
+categories: BLOG #카테고리 설정
 author: # 작성자
   - Byungineer
 #toc : true #Table of Contents

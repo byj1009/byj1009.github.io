@@ -2,7 +2,7 @@
 layout: post
 title: "[GitBlog] github-pages build with Jekyll failed (Liquid Exception: Liquid syntax error)" #게시물 이름
 tags: [gitblog, pages build, trouble shoot, ] #태그 설정
-categories: Github blog #카테고리 설정
+categories: BLOG #카테고리 설정
 author: # 작성자
   - Byungineer
 #toc : true #Table of Contents

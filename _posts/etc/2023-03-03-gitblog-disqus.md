@@ -2,7 +2,7 @@
 layout: post
 title: "[GitBlog] disqus 댓글기능 추가하기" #게시물 이름
 tags: [gitblog, disqus, 댓글, 디스커스] #태그 설정
-categories: Github blog #카테고리 설정
+categories: BLOG #카테고리 설정
 author: # 작성자
   - Byungineer
 #toc : true #Table of Contents
