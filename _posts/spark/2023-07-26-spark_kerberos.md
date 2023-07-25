@@ -1,4 +1,12 @@
-
+---
+layout: post
+title: "[Python] kafka-python을 통한 실시간 kudu cdc" #게시물 이름
+tags: [pyhton, Kafka, kudu, consumer, 카프카, CDC] #태그 설정
+categories: python #카테고리 설정
+author: # 작성자
+  - Byungineer
+#toc : true #Table of Contents
+---
 
 장기간 프로세스가 실행되어 CDC 작업을 수행하기 위해서는, 캐싱되어 있는 Kerberos ticket에 대한 재발행 (delegate token의 갱신)이 필요하다.
 
