@@ -1,28 +1,5 @@
----
-layout: post
-title: "[Spark] Spark-Streaming을 이용한 CDC 구현" #게시물 이름
-tags: [Cloudera, Spark, Spark3, bigdata, CDC] #태그 설정
-categories: Bigdata #카테고리 설정
-author: # 작성자
-  - Byungineer
-#toc : true #Table of Contents
----
 
-빅데이터 플랫폼 환경구축 PoC를 준비하며, Linux8.6 환경에서의 CDC 파이프라인 구축 테스트를 진행했다.
 
----
-요건은 다음과 같다.
-원천 DW(Oracle)의 Transaction Log를 수집해, 빅데이터 플랫폼(Kudu, HDFS, etc ...)에 실시간 적재, Change Data Capture를 구현하는 것.
-
-내가 테스트한 환경은 Rhel8.6, Python3.6이며 현재 3가지 버전으로 CDC를 테스트해보려 한다.
-
-1. Python3에서 Python-kafka 패키지 사용
-2. Spark-streaming 사용
-3. Nifi를 이용한 CDC (Put KUDU 프로세서 수정)
-
----
-
-## Kerberos 설정
 장기간 프로세스가 실행되어 CDC 작업을 수행하기 위해서는, 캐싱되어 있는 Kerberos ticket에 대한 재발행 (delegate token의 갱신)이 필요하다.
 
 spark-submit 명령에서 `YARN Cluster` 모드에서만 이를 위한 `--principal` `--keytab` 옵션이 사용 가능하다.
@@ -38,122 +15,6 @@ Spark on YARN and Kubernetes only:
 
 #The keytab is copied to the host running the ApplicationMaster, and the Kerberos login is renewed periodically by using the principal and keytab to generate the required delegation tokens needed for HDFS.
 ```
-
-## 예제 코드 실행하기 Pi
-
-```bash
-spark3-submit --class org.apache.spark.examples.SparkPi \
-    --num-executors 1 \
-    --driver-memory 512m \
-    --executor-memory 512m \
-    --executor-cores 1 \
-    --principal $PRINCIPAL \
-    --keytab $KEYTAB \
-    $PATH/spark-examples_2.11-2.4.7.7.1.7.2000-305.jar
-```
-
-
-################### scala 사용 #################################
-kinit tester1
-spark3-shell --jars /opt/cloudera/parcels/SPARK3/lib/spark3/jars/spark-streaming-kafka-0-10_2.12-3.2.3.3.2.7172000.0-334.jar
-
-import org.apache.spark.streaming.{StreamingContext, Seconds}
-import org.apache.spark.streaming.kafka010._
-
-val kafkaParams = Map[String, String](
-  "bootstrap.servers" -> "10.200.101.174:9092",
-  "subscribe" -> "cdc_topic2",
-  "startingOffsets" -> "earliest"
-)
-
-# // 스트리밍 컨텍스트 생성
-val ssc = new StreamingContext(spark.sparkContext, Seconds(1))  
-
-val stream = KafkaUtils.createDirectStream[String, String](
-  ssc,
-  LocationStrategies.PreferConsistent,
-  ConsumerStrategies.Subscribe[String, String](Array("cdc_topic2"), kafkaParams)
-)
-
-stream.foreachRDD { rdd =>
-  // rdd를 처리하는 로직을 여기에 작성
-  rdd.foreach(println)
-}
-
-ssc.start()  // 스트리밍 컨텍스트 시작
-ssc.awaitTermination()  // 스트리밍 컨텍스트 종료 대기
-
-
-
-
-
-
-
-################### pyspark 사용 #################################
-
-kinit tester1
-pyspark3 --jars /opt/cloudera/parcels/SPARK3/lib/spark3/jars/spark-streaming-kafka-0-10_2.12-3.2.3.3.2.7172000.0-334.jar
-
-from pyspark.streaming import StreamingContext
-from pyspark.streaming.kafka import KafkaUtils
-
-kafkaParams = {
-    "bootstrap.servers": "192.168.1.100:9092",  # Kafka 브로커 서버 주소
-    "subscribe": "json_topic",  # 구독할 토픽 이름
-    "startingOffsets": "earliest"  # 시작 오프셋 설정
-}
-
-ssc = StreamingContext(spark.sparkContext, 1)  # 스트리밍 컨텍스트 생성
-
-stream = KafkaUtils.createDirectStream(
-    ssc,
-    ["json_topic"],  # 토픽 이름
-    kafkaParams
-)
-
-stream.foreachRDD(lambda rdd: rdd.foreach(print))  # 각 RDD를 처리하는 로직을 작성
-
-ssc.start()  # 스트리밍 컨텍스트 시작
-ssc.awaitTermination()  # 스트리밍 컨텍스트 종료 대기
-
-
-
-
-
-
-
-
-#### spark3-submit client mode
-spark3-submit --master yarn --keytab /etc/security/keytabs/tester1.keytab --principal tester1@GOODMIT.COM \
---jars /opt/cloudera/parcels/CDH/lib/kudu/kudu-spark3_2.12.jar \
---driver-java-options "-Djava.security.auth.login.config=/etc/security/keytabs/jaas.conf" \
---conf "spark.executor.extraJavaOptions=-Djava.security.auth.login.config=/etc/security/keytabs/jaas.conf" \
---conf "spark.driver.extraJavaOptions=-Djava.security.auth.login.config=/etc/security/keytabs/jaas.conf" \
-/root/spark/kafka.py 
-#### spark3-shell
-pyspark3 --master yarn --keytab /etc/security/keytabs/tester1.keytab --principal tester1@GOODMIT.COM \
---jars /opt/cloudera/parcels/CDH/lib/kudu/kudu-spark3_2.12.jar \
---driver-java-options "-Djava.security.auth.login.config=/etc/security/keytabs/jaas.conf" \
---conf "spark.executor.extraJavaOptions=-Djava.security.auth.login.config=/etc/security/keytabs/jaas.conf" \
---conf "spark.driver.extraJavaOptions=-Djava.security.auth.login.config=/etc/security/keytabs/jaas.conf"
-
-##### spark3-submit cluster mode
-spark3-submit --deploy-mode cluster \
---keytab /etc/security/keytabs/tester1.keytab \
---principal tester1@GOODMIT.COM \
---jars /opt/cloudera/parcels/CDH/lib/kudu/kudu-spark3_2.12.jar \
---driver-java-options "-Djava.security.auth.login.config=/etc/security/keytabs/jaas.conf" \
---conf "spark.driver.extraJavaOptions=-Djava.security.auth.login.config=/etc/security/keytabs/jaas.conf" \
---conf "spark.executor.extraJavaOptions=-Djava.security.auth.login.config=/etc/security/keytabs/jaas.conf" \
---conf "spark.yarn.keytab=/etc/security/keytabs/tester1.keytab" \
---conf "spark.yarn.principal=tester1@GOODMIT.COM" \
---conf "spark.yarn.security.tokens.hive.enabled=false" \
---conf "spark.yarn.security.tokens.hbase.enabled=false" \
-/root/spark/kafka.py 
-
-
-
---jars /opt/cloudera/parcels/CDH/lib/kudu/kudu-spark3_2.12.jar \
 
 
 https://spark.apache.org/docs/latest/structured-streaming-kafka-integration.html
@@ -328,17 +189,11 @@ py4j.protocol.Py4JError: An error occurred while calling o163.awaitTermination
 
 
 
-+----+--------------------+---------+---------+------+--------------------+-------------+
-| key|               value|    topic|partition|offset|           timestamp|timestampType|
-+----+--------------------+---------+---------+------+--------------------+-------------+
-|null|[7B 22 61 66 74 6...|cdctopic5|        0| 10906|2023-07-24 14:57:...|            0|
-|null|[7B 22 61 66 74 6...|cdctopic5|        0| 10907|2023-07-24 14:57:...|            0|
-|null|[7B 22 61 66 74 6...|cdctopic5|        0| 10908|2023-07-24 14:57:...|            0|
-|null|[7B 22 61 66 74 6...|cdctopic5|        0| 10909|2023-07-24 14:57:...|            0|
-+----+--------------------+---------+---------+------+--------------------+-------------+
+
 
 
 
 
 
 위의 코드에서 groupBy와 agg 함수를 사용하여 primary_key 컬럼의 값이 같은 경우를 기준으로 데이터를 그룹화하고, collect_list 함수를 사용하여 같은 primary_key의 값을 리스트로 모아서 "values"라는 새로운 컬럼에 할당합니다. 이렇게 하면 primary_key 컬럼의 값이 같은 데이터는 그룹화되어 하나의 row로 표현되며, value 컬럼의 값들은 리스트로 모여있는 형태로 데이터를 추출할 수 있습니다. 결과에서 볼 수 있듯이, primary_key가 같은 경우에 해당하는 value들이 리스트로 모아져서 표현됩니다.
+
