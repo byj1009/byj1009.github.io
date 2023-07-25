@@ -17,7 +17,6 @@ Python3.x에서는 Python에서 바로 Kudu로 접근이 불가능하므로, Apa
 
 # 0. 버전정보
 ## 0.1 테스트 환경
-
 - Linux, Rhel8.6
 - Python3.6.4 (Rhel8.6 default python)
 - kerberos enabled
@@ -37,7 +36,6 @@ source activate
 ```
 
 ## 1.2 Python Package 설치
-
 
 ``` bash
 pip install --upgrade pip
@@ -130,8 +128,7 @@ zipp==3.6.0
 
 CDC 테스트에 Json형식의 예제 데이터는 아래와 같다.
 
-```
-date = {"before":{
+data = {"before":{
                 "id": 1,
                 "val": 123
                 },
@@ -140,7 +137,7 @@ date = {"before":{
             "val": 321
                 }
         }
-```
+
 
 ### 2.1 cdc_test.py 파일
 
