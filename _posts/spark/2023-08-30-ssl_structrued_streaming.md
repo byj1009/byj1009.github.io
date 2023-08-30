@@ -1,7 +1,7 @@
 ---
 layout: post
-title: "[Spark] Spark Structured Streaming, Kafka to KUDU" #게시물 이름
-tags: [spark, spark3, kudu, structured_streaming, kafka, CDC] #태그 설정
+title: "[Spark] SSL/TLS Enabled, Spark Structured Streaming" #게시물 이름
+tags: [spark, TLS, SSL, kudu, structured_streaming, kafka, CDC] #태그 설정
 categories: spark #카테고리 설정
 author: # 작성자
   - Byungineer
