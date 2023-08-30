@@ -204,6 +204,7 @@ kafka-topics --create --topic test_topic --partitions 1 --bootstrap-server=cfm01
 ---
 ### Reference
 [needjarvis 티스토리 블로그][tstory]
-
+[kafka-pythony document][kafka-python]
 
 [tstory]: https://needjarvis.tistory.com/607
+[kafka-python]: https://kafka-python.readthedocs.io/en/master/apidoc/KafkaProducer.html

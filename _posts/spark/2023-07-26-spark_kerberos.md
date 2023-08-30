@@ -1,14 +1,33 @@
 ---
 layout: post
-title: "[Python] kafka-python을 통한 실시간 kudu cdc" #게시물 이름
+title: "[spark] spark-submit with Kerberos" #게시물 이름
 tags: [pyhton, Kafka, kudu, consumer, 카프카, CDC] #태그 설정
-categories: python #카테고리 설정
+categories: spark #카테고리 설정
 author: # 작성자
   - Byungineer
 #toc : true #Table of Contents
 ---
 
-장기간 프로세스가 실행되어 CDC 작업을 수행하기 위해서는, 캐싱되어 있는 Kerberos ticket에 대한 재발행 (delegate token의 갱신)이 필요하다.
+해당 Spark 관련 설정은 Cloudera Data Platform 기반의 환경에서 테스트 되었으며, 기본적으로 YARN을 통한 Spark Applcation의 리소스를 관리한다. 추가적으로, YARN / Mesos / Standalone Cluster Manager / Kubernetes 통한 리소스 관리가 가능하다.
+
+장기간 프로세스가 실행되어 CDC 작업을 수행하기 위해서는, 캐싱되어 있는 Kerberos ticket에 대한 재발행 (delegate token의 갱신)이 필요하다.   
+spark application을 배포하기 위해 필요한 Kerberos 관련 설정 정보를 정리해본다. 관련 설정 정보를 정리하기 전, 구분이 필요한 Client, Cluster mode에 대해서 짧게 정리해본다.   
+
+**Client Mode**
+Spark Driver는 Cluster 외부의 Machine에서 실행되며, 나머지 Worker는 Cluster에 위치해 있다.   
+Cluster Mode와 비슷하지만 다른 점은 Application을 제출한 Client Machine에 Spark Driver가 위치한다.   
+주로, 개발단계에서 테스트, 디버깅을 위해 사용한다.
+
+**Cluster Mode**
+하나의 Worker Node에 Spark Driver를 할당하고, 다른 Worker Node에 Executor를 할당한다.
+YARN을 사용하는 경우, Driver Node가 죽더라도 Failover가 자동적으로 수행되므로 Production에서 사용한다.
+
+
+<img src="/image/cluster-overview.png" alt="Apache Spark" style="width:596px; height: 286px;"/>
+
+
+
+
 
 spark-submit 명령에서 `YARN Cluster` 모드에서만 이를 위한 `--principal` `--keytab` 옵션이 사용 가능하다.
 ``` bash
@@ -19,8 +38,6 @@ Spark on YARN and Kubernetes only:
 --principal PRINCIPAL       Principal to be used to login to KDC.
 --keytab KEYTAB             The full path to the file that contains the keytab for the
                             principal specified above.
-
-
 #The keytab is copied to the host running the ApplicationMaster, and the Kerberos login is renewed periodically by using the principal and keytab to generate the required delegation tokens needed for HDFS.
 ```
 
@@ -48,7 +65,9 @@ https://spark.apache.org/docs/latest/structured-streaming-kafka-integration.html
 
 
 #### spark3-submit
-spark3-submit --master yarn --keytab /etc/security/keytabs/tester1.keytab --principal tester1@GOODMIT.COM \
+spark3-submit --master yarn \
+--keytab /etc/security/keytabs/tester1.keytab \
+--principal tester1@GOODMIT.COM \
 --jars /opt/cloudera/parcels/CDH/lib/kudu/kudu-spark3_2.12.jar \
 --driver-java-options "-Djava.security.auth.login.config=/etc/security/keytabs/jaas.conf" \
 --conf "spark.executor.extraJavaOptions=-Djava.security.auth.login.config=/etc/security/keytabs/jaas.conf" \
@@ -99,102 +118,6 @@ kudu.extra_configs: 추가적인 Kudu 설정을 지정합니다. 딕셔너리 �
 
 
 option("checkpointLocation", ...) or SparkSession.conf.set("spark.sql.streaming.checkpointLocation", ...)  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-23/07/21 10:46:01 WARN clients.NetworkClient: [Producer clientId=producer-2] Error while fetching metadata with correlation id 14 : {ATLAS_SPARK_HOOK=UNKNOWN_TOPIC_OR_PARTITION}
-
-
-
-
-ERROR:root:Exception while sending command.
-Traceback (most recent call last):
-  File "/opt/cloudera/parcels/SPARK3-3.2.3.3.2.7172000.0-334-1.p0.37609510/lib/spark3/python/lib/py4j-0.10.9.5-src.zip/py4j/clientserver.py", line 511, in send_command
-    answer = smart_decode(self.stream.readline()[:-1])
-RuntimeError: reentrant call inside <_io.BufferedReader name=3>
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/opt/cloudera/parcels/SPARK3-3.2.3.3.2.7172000.0-334-1.p0.37609510/lib/spark3/python/lib/py4j-0.10.9.5-src.zip/py4j/java_gateway.py", line 1038, in send_command
-    response = connection.send_command(command)
-  File "/opt/cloudera/parcels/SPARK3-3.2.3.3.2.7172000.0-334-1.p0.37609510/lib/spark3/python/lib/py4j-0.10.9.5-src.zip/py4j/clientserver.py", line 540, in send_command
-    "Error while sending or receiving", e, proto.ERROR_ON_RECEIVE)
-py4j.protocol.Py4JNetworkError: Error while sending or receiving
-\
-
-
-
-
-
-
-
-
-
-root:Exception while sending command.
-Traceback (most recent call last):
-  File "/opt/cloudera/parcels/SPARK3-3.2.3.3.2.7172000.0-334-1.p0.37609510/lib/spark3/python/lib/py4j-0.10.9.5-src.zip/py4j/clientserver.py", line 511, in send_command
-    answer = smart_decode(self.stream.readline()[:-1])
-RuntimeError: reentrant call inside <_io.BufferedReader name=3>
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/opt/cloudera/parcels/SPARK3-3.2.3.3.2.7172000.0-334-1.p0.37609510/lib/spark3/python/lib/py4j-0.10.9.5-src.zip/py4j/java_gateway.py", line 1038, in send_command
-    response = connection.send_command(command)
-  File "/opt/cloudera/parcels/SPARK3-3.2.3.3.2.7172000.0-334-1.p0.37609510/lib/spark3/python/lib/py4j-0.10.9.5-src.zip/py4j/clientserver.py", line 540, in send_command
-    "Error while sending or receiving", e, proto.ERROR_ON_RECEIVE)
-py4j.protocol.Py4JNetworkError: Error while sending or receiving
-ERROR:root:Exception while sending command.
-Traceback (most recent call last):
-  File "/opt/cloudera/parcels/SPARK3-3.2.3.3.2.7172000.0-334-1.p0.37609510/lib/spark3/python/lib/py4j-0.10.9.5-src.zip/py4j/clientserver.py", line 511, in send_command
-    answer = smart_decode(self.stream.readline()[:-1])
-  File "/usr/lib64/python3.6/socket.py", line 586, in readinto
-    return self._sock.recv_into(b)
-  File "/opt/cloudera/parcels/SPARK3-3.2.3.3.2.7172000.0-334-1.p0.37609510/lib/spark3/python/lib/pyspark.zip/pyspark/context.py", line 292, in signal_handler
-    self.cancelAllJobs()
-  File "/opt/cloudera/parcels/SPARK3-3.2.3.3.2.7172000.0-334-1.p0.37609510/lib/spark3/python/lib/pyspark.zip/pyspark/context.py", line 1195, in cancelAllJobs
-    self._jsc.sc().cancelAllJobs()
-  File "/opt/cloudera/parcels/SPARK3-3.2.3.3.2.7172000.0-334-1.p0.37609510/lib/spark3/python/lib/py4j-0.10.9.5-src.zip/py4j/java_gateway.py", line 1322, in __call__
-    answer, self.gateway_client, self.target_id, self.name)
-  File "/opt/cloudera/parcels/SPARK3-3.2.3.3.2.7172000.0-334-1.p0.37609510/lib/spark3/python/lib/pyspark.zip/pyspark/sql/utils.py", line 111, in deco
-    return f(*a, **kw)
-  File "/opt/cloudera/parcels/SPARK3-3.2.3.3.2.7172000.0-334-1.p0.37609510/lib/spark3/python/lib/py4j-0.10.9.5-src.zip/py4j/protocol.py", line 336, in get_return_value
-    format(target_id, ".", name))
-py4j.protocol.Py4JError: An error occurred while calling o59.sc
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/opt/cloudera/parcels/SPARK3-3.2.3.3.2.7172000.0-334-1.p0.37609510/lib/spark3/python/lib/py4j-0.10.9.5-src.zip/py4j/java_gateway.py", line 1038, in send_command
-    response = connection.send_command(command)
-  File "/opt/cloudera/parcels/SPARK3-3.2.3.3.2.7172000.0-334-1.p0.37609510/lib/spark3/python/lib/py4j-0.10.9.5-src.zip/py4j/clientserver.py", line 540, in send_command
-    "Error while sending or receiving", e, proto.ERROR_ON_RECEIVE)
-py4j.protocol.Py4JNetworkError: Error while sending or receiving
-Traceback (most recent call last):
-  File "/root/spark/kafka.py", line 152, in <module>
-    query.awaitTermination()
-  File "/opt/cloudera/parcels/SPARK3-3.2.3.3.2.7172000.0-334-1.p0.37609510/lib/spark3/python/lib/pyspark.zip/pyspark/sql/streaming.py", line 101, in awaitTermination
-  File "/opt/cloudera/parcels/SPARK3-3.2.3.3.2.7172000.0-334-1.p0.37609510/lib/spark3/python/lib/py4j-0.10.9.5-src.zip/py4j/java_gateway.py", line 1322, in __call__
-  File "/opt/cloudera/parcels/SPARK3-3.2.3.3.2.7172000.0-334-1.p0.37609510/lib/spark3/python/lib/pyspark.zip/pyspark/sql/utils.py", line 111, in deco
-  File "/opt/cloudera/parcels/SPARK3-3.2.3.3.2.7172000.0-334-1.p0.37609510/lib/spark3/python/lib/py4j-0.10.9.5-src.zip/py4j/protocol.py", line 336, in get_return_value
-py4j.protocol.Py4JError: An error occurred while calling o163.awaitTermination
-
-
-
-
-
 
 
 

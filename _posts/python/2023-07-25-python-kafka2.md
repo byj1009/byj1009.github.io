@@ -243,6 +243,7 @@ impala를 통해서 처리를 하다보니 너무 느린 것 같다. 배치성�
 ### Reference
 
 [needjarvis 티스토리 블로그][tstory]
-
+[kafka-pythony document][kafka-python]
 
 [tstory]: https://needjarvis.tistory.com/607
+[kafka-python]: https://kafka-python.readthedocs.io/en/master/apidoc/KafkaProducer.html

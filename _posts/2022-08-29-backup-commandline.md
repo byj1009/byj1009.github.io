@@ -170,5 +170,6 @@ Check out the [Jekyll docs][jekyll-docs] for more info on how to get the most ou
 
 
 이미지 넣기
-<img src="/image/atlas-banner.png" alt="test" style="height: 100px; width:100px;"/>
 
+
+<img src="/image/cluster-overview.png" alt="Apache Spark" style="width:596px; height: 286px;"/>
