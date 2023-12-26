@@ -1,0 +1,656 @@
+scheduler 노드 지정
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+spec:
+  nodeName: control
+  containers:
+  -  image: nginx
+     name: nginx
+
+
+
+
+
+
+
+controlplane ~ ➜  kubectl apply -f nginx.yaml 
+Warning: resource pods/nginx is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.
+The Pod "nginx" is invalid: spec: Forbidden: pod updates may not change fields other than `spec.containers[*].image`,`spec.initContainers[*].image`,`spec.activeDeadlineSeconds`,`spec.tolerations` (only additions to existing tolerations),`spec.terminationGracePeriodSeconds` (allow it to be set to 1 if it was previously negative)
+  core.PodSpec{
+        ... // 9 identical fields
+        ServiceAccountName:           "default",
+        AutomountServiceAccountToken: nil,
+-       NodeName:                     "",
++       NodeName:                     "node01",
+        SecurityContext:              &{},
+        ImagePullSecrets:             nil,
+        ... // 19 identical fields
+  }
+
+
+controlplane ~ ✖ kubectl replace --force -f nginx.yaml 
+pod "nginx" deleted
+pod/nginx replaced 
+
+
+kubectl get pods --selector bu=dev
+
+#### How many objects are in the prod environment including PODs, ReplicaSets and any other objects
+kubectl get all --selector env=prod
+## 복수 label 필터링
+kubectl get pods --selector env=prod,bu=finance,tier=frontend
+
+# node에 적용된 taint 검색
+➜  kubectl describe node node01 | grep Taint
+Taints:             <none>
+
+###Create a taint on node01 with key of spray, value of mortein and effect of NoSchedule
+kubectl taint node node01 spray=mortein:NoSchedule
+node/node01 tainted
+
+
+## toleration 설정 yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: bee
+  name: bee
+spec:
+  containers:
+  - image: nginx
+    name: bee
+  tolerations:
+  - key: "spray"
+    value: "mortein"
+    effect: "NoSchedule"
+    operator: "Equal"
+
+# Taint 등록
+kubectl taint node controlplane node-role.kubernetes.io/control-plane:NoSchedule
+# 해제 // - 추가;;
+kubectl taint node controlplane node-role.kubernetes.io/control-plane:NoSchedule-
+
+
+# node labeling
+kubectl label node node01 color=blue
+
+# taint 적용여부 확인
+kubectl describe node node01 | grep -i taint
+Taints:             <none>
+
+# 실행중인 deployment 설정정보 변경
+kubectl edit deployment blue
+
+
+# affinity node 설정  방법 // 양식은 kubenetes 도큐멘트 참고
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: color
+                operator: In
+                values:
+                - blue
+
+
+"""Create a new deployment named red with the nginx image and 2 replicas, and ensure it gets placed on the controlplane node only.
+Use the label key - node-role.kubernetes.io/control-plane - which is already set on the controlplane node."""
+
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+
+
+
+# Taint and toleration 활용 예시
+사용자가 컨테이너를 원하는 노드에 생성되도록 맵핑을 하고자 할 때, taint와 toleration을 활용할 수 있다.
+taint는 노드에 정해진 label이 붙은 컨테이너(pod)만 생성되도록 규제를 거는 것이고, toleration은 이러한 제약(taint)를 통과할 수 있는 권한을 부여? 하는 것이라고 이해하면 된다. 하지만, 이렇게 한 경우 taint가 설정되지 않은 또 다른 노드들에 파드가 생성될 수 있기 때문에 궁극적인 해결방법은 아니다.
+
+# node affinity
+위 경우를 node affinity로 해결한다면 어떻게 될 까.
+node affinity를 설정한 경우에 각 label에 맞게 해당 노드에서 파드가 생성이 정상적으로 될 것이다. 그럼 label이 붙지 않은 일반적인 노드들은 어떻게 될까? 만약 node affinity가 적용이 되어 있다면, 해당 노드에는 이제 label이 붙지 않은 이상 그 어떠한 파드도 생성이 되지 않을 것이다.
+이런 것 또한 우리가 원하는 설정 방안은 아닐 것이다.
+
+# taint, toleration  +++ node affinity
+그렇기 때문에 위 두가지를 적절하게 혼합하여 적용해야 한다.
+
+
+
+## pod 리소스 제한
+spec:
+  containers:
+  - args:
+    - --vm
+    - "1"
+    - --vm-bytes
+    - 15M
+    - --vm-hang
+    - "1"
+    command:
+    - stress
+    image: polinux/stress
+    imagePullPolicy: Always
+    name: mem-stress
+    resources: ########## 이 부분 수정
+      limits:
+        memory: 20Mi
+      requests:
+        memory: 15Mi
+
+
+# daemon set
+
+ReplicaSet과 유사하지만, Daemon Sets은 각 노드에 하나씩 생성이 되고, ReplicaSet은 Replicas 개수만큼 생성이 가능한 노드에 골고루 (하나의 노드에만 몰려서 생성될 수 있음) 생성된다.
+노드가 추가되면 Daemon Sets의 파드도 자동 생성, 제거시 자동으로 delete
+
+monitoring하거나, log를 수집하는 경우 하나씩 필요하니까 파드가... 이 경우에 Daemon Sets을 활용하면 아주 유용하다.
+++ kube-proxy의 경우에도 각 노드마다 필요하기 때문에 사용하기 적합
+++ weave-net 또한,
+
+
+# 조회
+kubectl get daemonsets -A
+
+# daemonset 생성 방법
+# 1. deployment 생성 양식 만들기
+kubectl create deployment elasticsearch --image=registry.k8s.io/fluentd-elasticsearch:1.20 --dry-run=client -o yaml > fluentd.yaml
+# kind Daemonset으로 수정
+apiVersion: apps/v1
+kind: Daemonset
+metadata:
+  creationTimestamp: null
+  labels:
+    app: elasticsearch
+  name: elasticsearch
+  namespace: kube-system
+spec:
+  replicas: 1##### 삭제
+  selector:
+    matchLabels:
+      app: elasticsearch
+  strategy: {} ##### 삭제
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: elasticsearch
+    spec:
+      containers:
+      - image: registry.k8s.io/fluentd-elasticsearch:1.20
+        name: fluentd-elasticsearch
+        resources: {}##### 삭제
+status: {}##### 삭제
+
+
+
+# Static pod
+How many static pods exist in this cluster in all namespaces?
+-controlplane 이 붙은 파드는 기본 static pod
+
+# kubelet 기본 static pod 설정 디렉토리 조회 방법 
+ps aux | grep kubelet
+root        3656  0.0  0.1 1040292 315304 ?      Ssl  07:07   0:31 kube-apiserver --advertise-address=192.24.194.9 --allow-privileged=true --authorization-mode=Node,RBAC --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-issuer=https://kubernetes.default.svc.cluster.local --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-account-signing-key-file=/etc/kubernetes/pki/sa.key --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key
+root        4683  0.0  0.0 3996188 103348 ?      Ssl  07:07   0:15 /usr/bin/kubelet --bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf --kubeconfig=/etc/kubernetes/kubelet.conf --config=/var/lib/kubelet/config.yaml --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --pod-infra-container-image=registry.k8s.io/pause:3.9
+root        9864  0.0  0.0   6744   724 pts/0    S+   07:21   0:00 grep --color=auto kubelet
+
+
+--config=/var/lib/kubelet/config.yaml >> staticpodpath 저장 확인
+
+
+# static pod 만들기
+cd /etc/kubernetes/manifests
+kubectl run static-busybox --image=busybox --command sleep 1000 --dry-run=client -o yaml > busybox.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: static-busybox
+  name: static-busybox
+spec:
+  containers:
+  - command:
+    - sleep
+    - "1000"
+    image: busybox
+    name: static-busybox
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+
+# 위 yaml 파일 수정시 자동으로 pod 재생성함.
+
+
+
+# scheduler를 여러개 설정 할 수 있다. 이름은 다 달라야 함.
+pod로서 생성도 가능하며, deployment로 생성할 수도 있다.
+
+custom scheduler 적용 여부 확인
+kubectl get events -o wide
+
+
+# cat my-scheduler-configmap.yaml
+apiVersion: v1
+data:
+  my-scheduler-config.yaml: |
+    apiVersion: kubescheduler.config.k8s.io/v1beta2
+    kind: KubeSchedulerConfiguration
+    profiles:
+      - schedulerName: my-scheduler
+    leaderElection:
+      leaderElect: false
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: my-scheduler-config
+  namespace: kube-system
+# cat my-scheduler-config.yaml
+apiVersion: kubescheduler.config.k8s.io/v1beta2
+kind: KubeSchedulerConfiguration
+profiles:
+  - schedulerName: my-scheduler
+leaderElection:
+  leaderElect: false
+
+
+# cat my-scheduler.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: my-scheduler
+  name: my-scheduler
+  namespace: kube-system
+spec:
+  serviceAccountName: my-scheduler
+  containers:
+  - command:
+    - /usr/local/bin/kube-scheduler
+    - --config=/etc/kubernetes/my-scheduler/my-scheduler-config.yaml
+    image: registry.k8s.io/kube-scheduler:v1.27.0
+    livenessProbe:
+      httpGet:
+        path: /healthz
+        port: 10259
+        scheme: HTTPS
+      initialDelaySeconds: 15
+    name: kube-second-scheduler
+    readinessProbe:
+      httpGet:
+        path: /healthz
+        port: 10259
+        scheme: HTTPS
+    resources:
+      requests:
+        cpu: '0.1'
+    securityContext:
+      privileged: false
+    volumeMounts:
+      - name: config-volume
+        mountPath: /etc/kubernetes/my-scheduler
+  hostNetwork: false
+  hostPID: false
+  volumes:
+    - name: config-volume
+      configMap:
+        name: my-scheduler-config
+
+
+## 새로만든 custom scheudler로 pod 생성
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+spec:
+  schedulerName: my-scheduler  ##### 핵심
+  containers:
+  - image: nginx
+    name: nginx
+
+# configmap 만들기
+kubectl create configmap --name my-scheduler-config --from-file=/root/my-shceduler-config.yaml -n kube-system
+kubectl get configmap my-schduler-config -n kube-system
+# 위 작업과 동일
+kubectl create -f my-scheduler-configmap.yaml
+
+https://github.com/kubernetes/community/blob/master/contributors/devel/sig-scheduling/scheduling_code_hierarchy_overview.md
+
+https://kubernetes.io/blog/2017/03/advanced-scheduling-in-kubernetes/
+
+https://jvns.ca/blog/2017/07/27/how-does-the-kubernetes-scheduler-work/
+
+https://stackoverflow.com/questions/28857993/how-does-kubernetes-scheduler-work
+
+
+# Kubernetes 노드들의 모니터링 >> Metrics Server
+Prometheus
+Elastic Stack
+Datadog
+dynatrace
+in-memory 방식, 오픈소스들임 위에 있는 것. 디스크에 저장되지 않음.
+
+Kubelete에는 cAdvisor가 있는데, 여기에서 모니터링해서 metrics server에 전달함.
+
+
+# deployment 의 upgrade
+기본은 rolling upgrade가 기본이며 recreate 정책은 replicas 를 0으로 조정 했다가 다시 원복.
+
+rollout을 통해 rollback
+
+kubectl apply -f 업그레이드
+kubectl set image ~~~ 이미지 업그레이드
+kubectl rollout ~~
+
+동작 중인 deployment 수정
+kubectl edit deployment 이름
+
+
+
+# command 추가
+apiVersion: v1 
+kind: Pod 
+metadata:
+  name: ubuntu-sleeper-2 
+spec:
+  containers:
+  - name: ubuntu
+    image: ubuntu
+    command: ['sleep','5000']
+
+
+
+
+
+
+
+
+# Create a pod with the given specifications. By default it displays a blue background. Set the given command line arguments to change it to green.
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: webapp-green
+  name: webapp-green
+spec:
+  containers:
+  - image: kodekloud/webapp-color
+    name: webapp-green
+    args: ["--color", "blue"]
+
+
+
+# environment 설정
+
+# ConfigMaps
+kubectl create configmap <config-name> --from-literal=<key>=<value>
+
+1) kubectl create app-config --from-literal=APP_COLOR=blue \
+--from-literal=APP_MOD=prod
+2) kubectl create app-config --from-file=app_config.properties
+
+kubectl create -f
+
+apiVersion: v1
+kind: Configmap
+metadata:
+  name: app-config
+data:
+  APP_COLER=blue
+  APP_MOD=prod
+
+
+
+
+pods에 configmap 활용방법
+# 미리 만들어둔 configmap 전체 적용
+envFrom:
+  - configMapRef:
+      name: app-config
+# 새로 configmap 일부 env 적용
+env:
+  - name: APP_COLOR
+    valueFrom:
+      configMapKeyRedf:
+        name: app-config
+        key: APP_COLOR
+# volume에 적용
+volumes:
+- name: appconfig-volumne
+  configMap:
+    name: app-config
+
+
+
+controlplane ~ ➜  kubectl create configmap webapp-config-map --from-literal=APP_COLOR=darkblue --from-literal=APP_OTHER=disregard
+
+
+# 예시 문제풀이
+"""
+Update the environment variable on the POD to use only the APP_COLOR key from the newly created ConfigMap.
+Pod Name: webapp-color
+ConfigMap Name: webapp-config-map
+"""
+
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    name: webapp-color
+  name: webapp-color
+spec:
+  containers:
+  - env:
+    - name: APP_COLOR
+      valueFrom:
+        configMapKeyRef:
+          name: webapp-config-map
+          key: APP_COLOR
+    image: kodekloud/webapp-color
+    name: webapp-color
+
+
+
+## Secrets
+Python app 중에, mysql db connection 정보가 담긴 variables가 필요할 때, 그대로 하드코딩하는 것은 보안에 매우 취약함. 그래서 나온게 secrets
+
+Imperative 방법
+1. 명령어로
+kubectl create secret generic <name> --from-literal=<key>=<value>
+2. 특성 저장 파일 이용
+kubectl create secret generic <name> --from-file=@#@#.properties
+
+Declarative 방법
+kubectl create -f filename.yaml
+filneame.yaml 파일에 작성하는 건데, plain text로 저장시 똑같이 위험이 있으니, 인코딩해서 작성해야 함.
+>>  base64
+
+# 주의사항
+1. Secrets are not Encrypted. Only encoded.
+1-1. Do not check-in Secret objects to SCM along with code.
+2. Secrets are not encrypted in ETCD
+2-1. Enable encryption at rest
+3. Anyone able to create pods/deployments in the same namespace can access the secrets
+3-1 Configure least-privilege access to Secrets - RBAC
+4. consider third-party secrets store providers
+4-1. AWS Provider, Azure Provider, GCP provider, Vault Provider
+
+
+## 참고 Secrets
+Secrets are not encrypted, so it is not safer in that sense. However, some best practices around using secrets make it safer. As in best practices like:
+
+Not checking-in secret object definition files to source code repositories.
+
+Enabling Encryption at Rest for Secrets so they are stored encrypted in ETCD. 
+
+Kubelet stores the secret into a tmpfs so that the secret is not written to disk storage.
+
+Once the Pod that depends on the secret is deleted, kubelet will delete its local copy of the secret data as well.
+
+
+# secret 관련 명령
+kubectl get secrets
+
+
+Create a new secret named db-secret with the data given below.
+"""
+Secret Name: db-secret
+
+Secret 1: DB_Host=sql01
+
+Secret 2: DB_User=root
+
+Secret 3: DB_Password=password123"""
+
+kubectl create secret generic db-secret --from-literal=DB_Host=sql01 --from-literal=DB_User=root --from-literal=DB_Password=password123
+
+
+
+
+## 운영중인 pod 수정방법
+kubectl edit pod <pod_name>
+~~ 수정하기 ~~
+
+tmp 파일 생성된것 경로 복사
+kubectl replace --force -f /tmp파일 경로
+
+kubectl replace --force -f /tmp/kubectl-edit-809872468.yaml
+pod "webapp-pod" deleted
+pod/webapp-pod replaced
+
+https://kubernetes.io/ko/docs/concepts/configuration/secret/
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: secret-test-pod
+spec:
+  containers:
+    - name: test-container
+      image: registry.k8s.io/busybox
+      command: [ "/bin/sh", "-c", "env" ]
+      envFrom:
+      - secretRef:
+          name: mysecret
+  restartPolicy: Never
+```
+
+
+# secret 보안 적용하는 법 예시 rest 사용
+kubectl create secret generic my-secret --from-listeral=key1=supersecret
+
+kubectl get secret my-secret -o yaml
+>> 출력물에 data: key1: casdfasdf=
+bas64로 인코딩된 데이터가 보임
+echo "asdflkajsdf=" | base64 --decode , 하면 디코딩되어 원문이 다 보임.
+
+etcdctl 명령어로 저장된 내용 확인 하면,
+```
+ETCDCTL_API=3 etcdctl \
+--cacert=/etc/kubernetes/pki/etcd/ca.crt \
+--cert=/etc/kubernetes/pki/etcd/server.crt \
+--key=/etc/kubernetes/pki/etcd/server.key \
+get /registry/secrets/default/my-secret | hexdump -C
+```
+
+>> 출력으로 etcd에 저장된 내용 나옴. 보면 key의 value가 인코딩 안된 값이 그대로 보임.
+
+# rest 를 이용한 etcd 암호화 적용 여부 확인
+ps -aux | grep kube-api | grep "encryption-provider-config"
+
+cat /etc/kubernetes/manifests/kube-apiserver.yaml
+>> 내용에 provider 정보 있는지 확인
+
+https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/
+
+양식 위에서 확인
+
+랜덤 키 생성
+head -c 32 /dev/urandom | base64
+<BASE 64 ENCODED SECRET>
+```vi enc.yaml
+---
+apiVersion: apiserver.config.k8s.io/v1
+kind: EncryptionConfiguration
+resources:
+  - resources:
+      - secrets
+      - configmaps
+      - pandas.awesome.bears.example
+    providers:
+      - aescbc:
+          keys:
+            - name: key1
+              # See the following text for more details about the secret value
+              secret: <BASE 64 ENCODED SECRET>
+      - identity: {} # this fallback allows reading unencrypted secrets;
+                     # for example, during initial migration                  
+```
+mkdir /etc/kubernetes/enc
+mv env.yaml /etc/kubernetes/enc/
+
+vi /etc/kubernetes/manifests/kube-apiserver.yaml
+```
+---
+#
+# This is a fragment of a manifest for a static Pod.
+# Check whether this is correct for your cluster and for your API server.
+#
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    kubeadm.kubernetes.io/kube-apiserver.advertise-address.endpoint: 10.20.30.40:443
+  creationTimestamp: null
+  labels:
+    app.kubernetes.io/component: kube-apiserver
+    tier: control-plane
+  name: kube-apiserver
+  namespace: kube-system
+spec:
+  containers:
+  - command:
+    - kube-apiserver
+    ...
+    - --encryption-provider-config=/etc/kubernetes/enc/enc.yaml  # add this line
+    volumeMounts:
+    ...
+    - name: enc                           # add this line
+      mountPath: /etc/kubernetes/enc      # add this line
+      readOnly: true                      # add this line
+    ...
+  volumes:
+  ...
+  - name: enc                             # add this line
+    hostPath:                             # add this line
+      path: /etc/kubernetes/enc           # add this line
+      type: DirectoryOrCreate             # add this line
+  ...
+  ```
+  
+자동으로 저장되면서 kube-apiserver 자동 재시작
+
+이렇게 하면 이후로 생성하는 secret의 메타 정보가 etcd에 저장될 때 암호화되어 저장되는데, 이전에 생성했던 정보들은 그대로 암호화 되지 않았음을 확인 가능함.
+
+따라서 모든 데이터가 암호화될 수 있도록 전체 적용해야함 / 모든 secret 재생성
+kubectl get secrets --all-namespaces -o json | grep replace -f -
+
+
+
+# multi container pods가 왜 필요할까.
+단편적인 예로, 웹서비스 pods가 존재하고, 서비스의 로그를 수집하는 기능 어플리케이션이 있다면 두개의 서비스는 같은 pods 내에서 생애주기(?)를 같이해야 관리가 쉽다.
+그렇기 때문에 사용하는데, a만드는 것은 yaml 형식에서 spec: > containers: 아래에 
+- name 을 복수로 지정하면 된다. ( image 포함 )
+
