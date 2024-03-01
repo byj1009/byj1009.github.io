@@ -1,7 +1,7 @@
 ---
 layout: post
-title: "[Python] kafka-python을 통한 실시간 kudu cdc" #게시물 이름
-tags: [pyhton, Kafka, kudu, consumer, 카프카, CDC] #태그 설정
+title: "[Python] easy_python 정리" #게시물 이름
+tags: [pyhton, youtube, starcraft, 나도코딩] #태그 설정
 categories: python #카테고리 설정
 author: # 작성자
   - Byungineer

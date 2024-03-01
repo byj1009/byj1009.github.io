@@ -654,3 +654,1451 @@ kubectl get secrets --all-namespaces -o json | grep replace -f -
 그렇기 때문에 사용하는데, a만드는 것은 yaml 형식에서 spec: > containers: 아래에 
 - name 을 복수로 지정하면 된다. ( image 포함 )
 
+
+
+# kubectl drain
+특정 노드에 실행중인 파드 전부 제거, 노드를 제거할 때 사전작업 느낌
+controlplane ~ ✖ kubectl drain node01 --ignore-daemonsets
+node/node01 cordoned
+Warning: ignoring DaemonSet-managed Pods: kube-flannel/kube-flannel-ds-ksmzp, kube-system/kube-proxy-l4cjt
+evicting pod default/blue-6b478c8dbf-vdr8q
+evicting pod default/blue-6b478c8dbf-5fpmh
+pod/blue-6b478c8dbf-5fpmh evicted
+pod/blue-6b478c8dbf-vdr8q evicted
+node/node01 drained
+
+# kubectl uncordon
+다시 스케줄링이 되도록 적용하는 명령어
+# kubectl cordon node01
+???
+
+
+kubectl drain을 하면, replicaset에 등록되어 있는 replica에 한해서, evicting된 이후에 다른 node에 파드가 생성되고, 일반적으로 생성된 Pods의 경우에는 kubectl drain 명령어를 수행시 에러가 발생하며, --force 옵션을 통해 강제적으로 drain하면 파드가 소실되며 재생성 되지 않는다.
+
+
+
+# kubernetes 업그레이드 방법
+업그레이드는 마이너 버전 1단계씩 올리는게 권장
+
+1. master server 업그레이드
+apiserver, scheduler, etcd ...
+
+2. 워커 노트 업그레이드.
+2-1. 한번에 모든 노드 업그레이드(다운타임 있음)
+2-2. 하나의 노드만 업그레이드.(파드가 다른 워커노드에 옮겨감, 다운타임 x)
+2-3. 업그레이드된 워커노드 하나를 추가해서 파드를 다 옮겨가게 하고 구버전 제거
+
+kubeadm upgrade plan으로 업그레이드 가능
+
+
+```
+apt-get upgrade -y kubeadm=1.12.0-00
+kubeadm upgrade apply v1.12.0
+>> kubelet의 버전은 업그레이드 따로 해야함.
+
+apt-get upgrade -y kubelet=1.12.0-00
+systemctl restart kubelet
+```
+
+워커 노드의 kubelet 업그레이드는
+1. kubectl drain node-1 #파드 제거
+2. 업그레이드, 재시작
+2-1 apt-get update
+2-2 apt-get install kubeadm=1.27.0-00
+2-3 kubeadm upgrade node
+2-4 apt-get install kubelet=1.27.0-00
+2-5 systemctl daemon-reload && systemctl restart kubelet
+3. kubectl uncordon node-1 # 스케줄링 적용
+
+
+kubeadm upgrade plan 명령어를 통해 현재 버전과 업그레이드 가능 버전 조회 가능
+
+
+
+
+# etcd backup
+export ETCDCTL_API=3
+etcdctl snapshot save snapshot.db
+# etcd restore
+export ETCDCTL_API=3
+etcdctl snapshot restore snapshot.db --data-dir /var/lib/etcd-from-backup
+systemctl daemon-reload
+service etcd restart
+
+
+#example
+etcdctl snapshot save /opt/snapshot-pre-boot.db --endpoints=https://[127.0.0.1]:2379 --cacert="/etc/kubernetes/pki/etcd/ca.crt" --cert="/etc/kubernetes/pki/etcd/server.crt" --key="/etc/kubernetes/pki/etcd/server.key"
+
+etcdctl snapshot restore /opt/snapshot-pre-boot.db --data-dir /var/lib/etcd-from-backup
+
+# data-dir이 다르니까 etcd.yaml을 수정해서 backup한 데이터 디렉토리를 바라 볼 수 있도록 수정해야 함.
+$vi /etc/kubernetes/manifests/etcd.yaml
+
+
+  volumes:
+  - hostPath:
+      path: /var/lib/etcd-from-backup ## 이 부분 수정
+      type: DirectoryOrCreate
+    name: etcd-data
+
+
+# Authentication
+쿠버네티스에서는 유저를 생성하거나 관리 할 수 있는 자체의 기능은 없음. LDAP을 사용하거나 써드파티 기능을 이용해야 함.
+대신, 서비스어카운트는 만들 수 있는데,
+ex)kubectl create serviceaccount sa1
+
+
+1. Kube-apiserver를 통해서 접근하는 경우 user 관리 시나리오
+Admin / Developers가 있을 수 있음, 서비스는 제외
+ex)
+admin : kubectl 명령어 이요
+developer : curl https://kube-server-ip:6443/
+> authenticate
+> 동작
+
+authentication 방식
+static password file / static token file /certificates / Identity Services
+
+1.static password file
+CSV 타입으로 저장
+패스워드, 유저이름, 유저아이디, 그룹 형식으로 저장해서 씀.
+
+Create a file with user details locally at /tmp/users/user-details.csv
+
+# User File Contents
+password123,user1,u0001
+password123,user2,u0002
+password123,user3,u0003
+password123,user4,u0004
+password123,user5,u0005
+
+/etc/kubernetes/manifests/kube-apiserver.yaml
+spec:
+  containers:
+  - command:
+    - kube-apiserver
+    - --authorization-mode=Node,RBAC
+      <content-hidden>
+    - --basic-auth-file=/tmp/users/user-details.csv
+
+
+curl -v -k https://localhost:6443/api/v1/pods -u "user1:password123"
+
+2. static token file 
+패스워드 대신 토큰 사용
+ex)
+curl -v -k https://master-node-ip:6443/api/v1/pods --header "Authorization: Bearer asASD;lkjasg;laskdjfASLdkj"
+위 방식은 권장되는 Authetication 방식으 ㄴ아니고, 간단한 방법.
+
+
+# TLS
+kube-api-server, etcd, kubelet 각자가 server crt, key가 필요로 함.
+또한, 사용자의 admin.crt, key
+scheduler.crt , key
+
+kube-controller manager.crt, key
+
+kube-proxy crt, key
+
+
+
+
+## 백업
+cluster 보기
+kubectl config view
+
+#특정 클러스터 접근
+kubectl config use-context cluster1
+
+
+stacked etcd ??
+
+
+pods 는 없지만 프로세스가 있음. 외부의 external etcd 사용
+ps -ef | grep etcd
+root        1744    1375  0 12:58 ?        00:01:35 kube-apiserver --advertise-address=192.26.178.14 --allow-privileged=true --authorization-mode=Node,RBAC --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.pem --etcd-certfile=/etc/kubernetes/pki/etcd/etcd.pem --etcd-keyfile=/etc/kubernetes/pki/etcd/etcd-key.pem --etcd-servers=https://192.26.178.3:2379 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-issuer=https://kubernetes.default.svc.cluster.local --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-account-signing-key-file=/etc/kubernetes/pki/sa.key --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key
+
+
+외부 ETCD 서버에서 리스트 뽑기
+ETCDCTL_API=3 etcdctl \
+ --endpoints=https://127.0.0.1:2379 \
+ --cacert=/etc/etcd/pki/ca.pem \
+ --cert=/etc/etcd/pki/etcd.pem \
+ --key=/etc/etcd/pki/etcd-key.pem \
+  member list
+
+위 정보는 ps -ef | grep etcd 한 정보에서 추출 가능
+```
+ps -ef | grep etcd
+etcd         828       1  0 12:58 ?        00:00:41 /usr/local/bin/etcd --name etcd-server --data-dir=/var/lib/etcd-data --cert-file=/etc/etcd/pki/etcd.pem --key-file=/etc/etcd/pki/etcd-key.pem --peer-cert-file=/etc/etcd/pki/etcd.pem --peer-key-file=/etc/etcd/pki/etcd-key.pem --trusted-ca-file=/etc/etcd/pki/ca.pem --peer-trusted-ca-file=/etc/etcd/pki/ca.pem --peer-client-cert-auth --client-cert-auth --initial-advertise-peer-urls https://192.26.178.3:2380 --listen-peer-urls https://192.26.178.3:2380 --advertise-client-urls https://192.26.178.3:2379 --listen-client-urls https://192.26.178.3:2379,https://127.0.0.1:2379 --initial-cluster-token etcd-cluster-1 --initial-cluster etcd-server=https://192.26.178.3:2380 --initial-cluster-state new ```
+
+
+
+# ETCD 백업하기
+kubectl config use-context cluster1
+student-node ~ ➜  kubectl describe  pods -n kube-system etcd-cluster1-controlplane  | grep advertise-client-urls
+Annotations:          kubeadm.kubernetes.io/etcd.advertise-client-urls: https://192.26.178.12:2379
+      --advertise-client-urls=https://192.26.178.12:2379
+
+
+
+관련 정보 추출
+student-node ~ ➜  kubectl describe  pods -n kube-system etcd-cluster1-controlplane  | grep pki
+      
+      --cert-file=/etc/kubernetes/pki/etcd/server.crt
+      --key-file=/etc/kubernetes/pki/etcd/server.key
+      --peer-cert-file=/etc/kubernetes/pki/etcd/peer.crt
+      --peer-key-file=/etc/kubernetes/pki/etcd/peer.key
+      --peer-trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
+      --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
+      /etc/kubernetes/pki/etcd from etcd-certs (rw)
+    Path:          /etc/kubernetes/pki/etcd
+
+
+
+
+ETCDCTL_API=3 etcdctl --endpoints=https://10.1.220.8:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt --key=/etc/kubernetes/pki/etcd/server.key snapshot save /opt/cluster1.db
+
+>> Snapshot saved at /opt/cluster1.db
+
+student-node ~ ➜  scp cluster1-controlplane:/opt/cluster1.db /opt
+cluster1.db      
+
+
+
+
+
+## tls 정보 보는 위치
+cat /etc/kubernetes/manifests/kube-apiserver.yaml
+# etcd 설정 정보
+cat /etc/kubernetes/manifests/etcd.yaml 
+
+
+Run crictl ps -a command to identify the kube-api server container. Run crictl logs container-id command to view the logs.
+
+
+
+
+#certificateSigningRequest 생성 방법
+# 상황은, 사용자가 개인의 인증서를 가지고 서버에 접근할 수 있도록 k8s에 인증서를 등록해야 하는 상황.
+필요한 것은 csr, key.
+
+암호화된 인증서 정보는 base64로 인코딩 해야 함.
+
+cat 인증서.csr | base64 -w 0 
+
+-w 0 옵션을 통해서 한줄로 출력이 가능함, 그냥 base64로 하면 멀티라인으로 출력됨.
+
+#인증서 정보 보기
+kubectl get csr
+
+#승인하기
+kubectl certificate approve akshay
+
+kubectl certificate deny akshay
+
+kubectl delete csr agent-smith 
+
+
+
+###kubeconfig
+$HOME/.kube/config
+Cluster / Contexts / Users 로 구성
+
+
+#현재 kubeconfig 설정파일 위치
+ps -ef | grep kubeconfig
+/root/.kube/config
+
+## 사용중인 kubeconfig 확인
+To use that context, run the command: 
+kubectl config --kubeconfig=/root/my-kube-config use-context research
+
+To know the current context, run the command: 
+kubectl config --kubeconfig=/root/my-kube-config current-context
+
+
+
+### 옵션
+  1.  If the --kubeconfig flag is set, then only that file is loaded. The flag
+may only be set once and no merging takes place.
+  2.  If $KUBECONFIG environment variable is set, then it is used as a list of
+paths (normal path delimiting rules for your system). These paths are merged.
+When a value is modified, it is modified in the file that defines the stanza.
+When a value is created, it is created in the first file that exists. If no
+files in the chain exist, then it creates the last file in the list.
+  3.  Otherwise, ${HOME}/.kube/config is used and no merging takes place.
+Available Commands:
+  current-context   Display the current-context
+  delete-cluster    Delete the specified cluster from the kubeconfig
+  delete-context    Delete the specified context from the kubeconfig
+  delete-user       Delete the specified user from the kubeconfig
+  get-clusters      Display clusters defined in the kubeconfig
+  get-contexts      Describe one or many contexts
+  get-users         Display users defined in the kubeconfig
+  rename-context    Rename a context from the kubeconfig file
+  set               Set an individual value in a kubeconfig file
+  set-cluster       Set a cluster entry in kubeconfig
+  set-context       Set a context entry in kubeconfig
+  set-credentials   Set a user entry in kubeconfig
+  unset             Unset an individual value in a kubeconfig file
+  use-context       Set the current-context in a kubeconfig file
+  view              Display merged kubeconfig settings or a specified kubeconfig
+file
+
+
+
+https://nayoungs.tistory.com/entry/Kubernetes-Kubeconfig
+
+# what is kubeconfig
+kubernetes의 설정파일.
+kubectl 명령어로 apiserver에 접속(접근)할 때 사용하는 인증 정보를 담고 있는 파일. yaml형식...
+clusters, users, contexts로 구성되는데
+
+clusters: k8s의 apiserver의 접속 정보를 담고 있음. ip, domain, TLS/SSL CA.crt 정보
+users: k8s apiserver에 접근(접속)하는 유저들의 정보를 저장. TLS/SSL 사용시 관련 인증서 파일 정보도 포함.
+context: users와 clusters 사이 관계를 맵핑하기 위한 항목.
+현재 사용되는 contexts를 current-context에 지정
+
+현재 kubeconfig 내용 보기
+$ kubectl config view --kubeconfig=ny-kubeconfig
+
+
+
+
+####### api groups
+yaml 에서 가장 처음에 오는 그 api version에 대한 내용 정리
+종류는 다음과 같이 있음
+/metrics
+/healthz
+/version
+/api
+/apis
+/logs
+
+
+api, apis 관련 이미지는 인터넷에서 따로 찾아보자.
+
+### kube proxy != kubectl proxy
+
+
+
+
+## kubeapi를 통해 k8s 접근할 때 권한에 따른 api 사용을 제한해야 한다.
+그 방법에는 다음 4가지 있음.
+Authorization Mechanism : Node, ABAC, RBAC, Webhook
+
+Node : 
+
+abac : Access Based // 유저별로 룰 만들고 kubelet 재시작해야함. json 형식으로 관리됨.
+RBAC: Role Based
+Webhook : open Policy agent
+
+Authorization Mode:  위 4가지에 ++ AlwaysAllow, AlwaysDeny
+단계 별로 설정 가능,
+ex) --authorization-mode=Node,RBAC,webhook
+Node가 디나이 되면 RBAC, 디나이면 다음, 만약 중간에 인가되면 사용
+
+#RBAC
+yaml로 관리
+
+role을 만드는 yaml이 따로 있고, (kind: Role)
+해당 role user를 맵핑하기 위한 yaml을 생성해서 create 해야 함.(kind: RoleBinding)
+
+kubectl get roles 로 리스팅 가능
+kubectl describe rolebinding ~~~
+
+# 권한 체크하는 방법
+kubectl auth can-i create deployments --as dev-user
+>> yes or no
+
+https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+
+
+controlplane ~ ➜  cat dev_role.yaml 
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: default
+  name: developer
+rules:
+- apiGroups: [""] # "" indicates the core API group
+  resources: ["pods"]
+  verbs: ["create", "delete", "list"]
+
+
+
+
+controlplane ~ ➜  cat dev_rolebinding.yaml 
+apiVersion: rbac.authorization.k8s.io/v1
+# This role binding allows "jane" to read pods in the "default" namespace.
+# You need to already have a Role named "pod-reader" in that namespace.
+kind: RoleBinding
+metadata:
+  name: dev-user-binding
+subjects:
+# You can specify more than one "subject"
+- kind: User
+  name: dev-user # "name" is case sensitive
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role #this must be Role or ClusterRole
+  name: dev-user # this must match the name of the Role or ClusterRole you wish to bind to
+  apiGroup: rbac.authorization.k8s.io
+
+
+
+
+
+$kubectl edit roles developer 
+A copy of your changes has been stored to "/tmp/kubectl-edit-2884697500.yaml"
+error: the namespace from the provided object "blue" does not match the namespace "default". You must pass '--namespace=blue' to perform this operation.
+
+namespace를 바꾸면 에러가 발생하는데, 특정 pods를 지정해야 에러가 안남.
+
+
+## clusterrole
+role, rolebinding은 특정 네임스페이스 내의 규칙을 정의한다면,
+clusterrole은 전체 k8s cluster에 대한 규칙을 정의함.
+
+nodes, PV, namespaces, certificateSigningRequest와 같은 authorization 생성 및 관리
+
+## 사용 명령어
+kubectl get clusterrole
+kubectl get clusterrolebindings.rbac.authorization.k8s.io
+
+controlplane ~ ➜  kubectl describe clusterrole cluster-admin 
+Name:         cluster-admin
+Labels:       kubernetes.io/bootstrapping=rbac-defaults
+Annotations:  rbac.authorization.kubernetes.io/autoupdate: true
+PolicyRule:
+  Resources  Non-Resource URLs  Resource Names  Verbs
+  ---------  -----------------  --------------  -----
+  *.*        []                 []              [*]
+             [*]                []              [*]
+
+#전체에 적용.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: storage-admin
+rules:
+- apiGroups: [""]
+  resources: ["persistentvolumes","storageclasses"]
+  verbs: ["*"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: michelle-storage-admin
+subjects:
+- kind: User
+  name: michelle # Name is case sensitive
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: storage-admin
+  apiGroup: rbac.authorization.k8s.io
+
+
+##  Service account
+k8s에 접근하는 유저의 종류는 크게 2가지가 있음.
+User : 사람(사용자)
+Service : 웹어플리케이션, 데이터 수집 서비스와 같은 프로그램
+ex) Prometheus, jenkins
+
+Prometheus는 kubernetes api-server에 api를 통한 상태를 질의하고, 그 결과를 웹에 그래프로 나타내는데, 이러한 계정에 대한 관리를 Serviceaccount를 통해서 한다.
+token의 형태로 암호화 되어 Secret에 저장됨.
+
+즉, 서비스 계정 생성, RBAC 생성, Service token 생성 및 내용 전달
+이때 서비스 토큰을 volume에 마운트해서 서비스가 가져갈 수 있게 설정.
+
+토큰을 생성하지 않더라도 default-token이 자동으로 생성되며 mount 되는데 describe를 찍어보면 알 수 있음 이 정보는.
+그런데 이 토큰은 kubernetes api query중 기본적인 것들만 가능한 권한을 가지고 있음.
+
+edit을 통해서 pods에 serviceaccount를 추가하면 절대 안되며, 삭제 후 재 생성해야 함.
+하지만, deployments의 경우에는 edit이 가능함.
+deployment에서는 pods를 삭제 후 재 생성하여 관리하기 때문...
+
+#### 추가 내용
+현재 1.19v 에서는 serviceaccount를 생성하면, Secret에 해당 계정에 대한 token이 자동 생성이 되며 만료기한이 없다.
+하지만 최근 1.22, 1.24버전에서는 보안상의 이유로 해당 내용이 변경 되었으며, 1.22에서는 request API? 가 생겼고
+1.24에서는 serviceaccount를 생성 시 token이 생성되지 않고, 추가 명령어를 통해 생성해야 한다.
+또한 기본 만료기간이 1시간이다. >> 해당 토큰이 secret에 저장되는게 아님.
+kubectl create token ~~~
+
+만약 기존 처럼 만료기간 없는 토큰 만들려면 secret에 따로 만드는 yaml 만들면 됨. 1.19와 같은 구조.
+
+# 관련 명령어
+kubectl get serviceaccounts 
+
+cat serviceaccount.yaml 
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: dashboard-sa
+
+# 같음
+$kubectl create serviceaccount dashboard-sa
+
+# 토큰 생성 >> 1시간짜리, 사용할 때마다 생성
+kubectl create token dashboard-sa
+
+#deployment 에 serviceaccount 정보 넣기
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+spec:
+  strategy:
+  template:
+    spec:
+      serviceAccountName: dashboard-sa
+
+template안 (pods 정보)의 spec 하위에 작성
+
+
+
+## Image security
+Pods 를 생성할 때 예시로 --image=nginx의 형태로 생성한다.
+image=nginx는 사실, image=docker.io/library/nginx이며, 사용자 계정과 비밀번호를 입력하지 않아 docker에서 제공하는 official image가 모인 library아래의 nginx를 자동으로 서칭하는 것.
+
+image: [registry]/[User or Account]/[Image/Repository]
+
+registry : 구글 제공은 gcr.io 기본 도커 오피셜은 docker.io
+
+
+#private repository 이용방법
+docker daemon에서 이미지를 가져오는 방법은
+docker login repository.url.io
+docker run repository.url.io/apps/~~~name or docker push ...
+
+kubernetes에서는 해당 작업을, yaml아래에 repository와 이미지 정보를 넣고,
+계정 정보를 secret을 생성해서 관리한다.
+
+kubectl create secret docker-registry regcred \
+  --docer-server=   \
+  --docker-username=   \
+  --docker-password=   \
+  --docker-email=   
+
+  kubectl create secret docker-registry regcred --docker-server=<your-registry-server> --docker-username=<your-name> --docker-password=<your-pword> --docker-email=<your-email>
+
+
+
+  ## Security Context
+  #docker 사전 지식
+  docker run --user=1001 image_name command
+  위 명령어에서 --user 옵션을 사용하지 않으면 기본으로 root 계정으로 container가 생성된다.
+  또한, /usr/include/linux/capabilty.h 아래에 있는 유저들의 capability를 가져와 container를 생성하는데, 모든 권한을 다 가져오는건 아님.
+  그 예로 재부팅이나, net_admin, sys_admin 과 같은 권한은 없음
+
+  docker run --cap-add NET_ADMIN image_name command
+  위 와 같이 cap-add 옵션으로 추가 권한을 주거나 삭제할 수 있음.
+
+  kubernetes도 그 동작 방식이 같다.
+  Pods 단위에서 하거나, 내부의 Container에 지정할 수 있는데,
+  pods에 유저 정보를 container레벨에서 override해서 수정가능
+
+#continaer level
+apiVersion: v1
+kind: Pod
+metadata:
+  name: security-context-demo-2
+spec:
+  securityContext:
+    runAsUser: 1000
+  containers:
+  - name: sec-ctx-demo-2
+    image: gcr.io/google-samples/node-hello:1.0
+    securityContext:
+      runAsUser: 2000
+      allowPrivilegeEscalation: false
+
+#pod level
+apiVersion: v1
+kind: Pod
+metadata:
+  name: security-context-demo-4
+spec:
+  containers:
+  - name: sec-ctx-4
+    image: gcr.io/google-samples/node-hello:1.0
+    securityContext:
+      capabilities:
+        add: ["NET_ADMIN", "SYS_TIME"]
+
+######### capabilities는 container 레벨에서만 적용이 가능함!!!!
+
+# kubernetes network policy
+쿠버네티스는 기본적으로 내부에 생성되는 모든 파드 끼리 통신이 가능하도록 네트워크 정책이 설정되어있음(방화벽이 all allow)
+파드간 방화벽 작업을 하고 싶다, 그럼 Network Policy를 생성해서 특정 포트로만 통신이 가능하도록 할 수 있는데,
+이게 설정되면 해당 포트 외에는 전무 deny가 됨이 기본.
+
+해당 설정을 위해서는 Select, label을 이용해서 대상 파드를 선택하고, port 정보를 주면 됨.
+
+설정에서 PolicyTypes를 Ingress or Egress를 지정할 수 있는데,
+Ingress만 지정하면, Egress에 대해서는 모든 포트가 허용되는 상태인 것. 즉 기본은 모두 Allow, 하지만 정책을 설정하면 해당 포트만 뚫어주고 나머지는 막는다.
+
+Network Policy를 지원하는 솔루션
+1. Kube-router
+2. Calico
+3.Romana
+4. Weave-net
+
+
+## 추가 내용
+api-pod에서 db-pod 에 query를 날려 어떤 내용을 질의하고 그 결과를 받는 과정을 생각할 때,
+db-pod 입장에서는 방화벽정책을 ingress, egress 모두를 열어야 할까?
+답은 아니다, Api-pod로 부터의 질의(Query)는 db-pod로의 접근이기 때문에 Ingress정책은 필요로 하다.
+그럼, 해당 질의에 대한 답변을 보내는 것은? 질의에 대한 답변이기 때문에 별도의 정책이 필요로 없다.
+만약, db-pod가 api-pod로 부터 일련의 정보를 요구해서 리턴 받는 통신이 있다면, 그 때는 egress 정책이 필요로 할 수 있다.
+db-pods로 부터 나가는 것이기 때문에..
+
+exampleapiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: test-network-policy
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      role: db
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - ipBlock:
+        cidr: 172.17.0.0/16
+        except:
+        - 172.17.1.0/24
+    - namespaceSelector:
+        matchLabels:
+          project: myproject
+    - podSelector:
+        matchLabels:
+          role: frontend
+    ports:
+    - protocol: TCP
+      port: 6379
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 10.0.0.0/24
+    ports:
+    - protocol: TCP
+      port: 5978
+# 관련 명령어
+kubectl get networkpolicies
+
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: internal-policy
+spec:
+  podSelector:
+    matchLabels:
+      role: payroll
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          name: payroll
+    - podSelector:
+        matchLabels:
+          name: mysql
+    ports:
+    - protocol: TCP
+      port: 3306
+
+
+
+
+######## Storage
+
+## Storage Driver
+docker daemon을 설치하면 
+/var/lib/docker 아래에 디렉토리가 생기고, image, container정보와 같은 내용들이 파일로서 저장이된다.
+
+docker에서 이미지를 빌드할 때, layer의 개념을 사용해서 빌드가 되는데, 이미 사용되어 캐싱되어 있는 layer는 재사용하므로 디스크 사용량을 감소하고, 속도를 증가시킴.
+이러한 Image Layer는 read Only로 수정이 불가능하고,
+
+Container Layer에서는 Read Write가 가능하기 때문에 수정이 가능.
+ex) 컨테이너 내에서 앱을 실행하거나, 파일을 생성하고 등등 작업..
+
+Image Layer에 내장되어 있는 app.py라는 파일을 수정해서 실행해야 하는 상황이 있다면,
+이미지를 새로 빌드해야 하느냐? 그것도 가능하지만, Container Layer에 app.py를 옮기고 수정해서 사용하는 방법이 있다. >> COPY-ON-WRITE 방식
+
+# volumes
+container에 생성되는 데이터를 local에 저장 및 수정이 가능하도록 사용하기 위해서 사용
+DB의 파일 저장이 예시
+
+docker run -v data_volume:/var/lib/mysql mysql
+위 명령어를 사용하면 mysql이라는 container가 실행되며 해당 컨테이너 내부의 /var/lib/mysql 아래의 파일을 data_volume이라는 명칭으로 docker의 기본 volume 경로인
+/var/lib/docker/volumes 하위에 마운트되어 파일 시스템이 동기화 된 것 처럼 사용됨.
+
+만약 위 기본 경로가 아니라 다른 디렉토리를 마운트 해서 사용하고 싶다면 아래의 명령어 사용.
+kubectl run -v /data/mysql:/var/lib/mysql mysql
+
+#Storage Driver 종류
+-AUFS
+-ZFS
+-BTRFS
+-Device Mapper
+-Overlay
+-Overlay2
+
+
+## Volumes Drivers
+-Local
+-Azure File Storage
+-Convoy
+-DigitalOcean Block Storage
+-Flocker
+-gce-docker-GlusterFS
+-NetApp
+-RexRay
+-Portworx
+-VMware vSphere storage
+
+
+## PVC
+k8s에서 pods가 삭제되면 안의 데이터도 삭제됨.
+이를 막기 위해서 우리는 volume을 사용함.
+컨테이너 내부의 /opt/data.txt 라는 파일을 해당 host의 로컬에 저장하기 위해서
+볼륨 마운트를 했고, 해당 컨테이너가 삭제되었지만 로컬 호스트의 볼륨마운트된 경로에 파일이 남아있다.
+
+만약, 노드가 여러개가 된다면 어떻게 될까?
+이러한 상황을 위해서 여러 서비스들이 존재함. ex)AWS EBS
+
+로컬피씨, baremetal에서는 PVC 사용.
+@@@@ 추가적으로 워커 3대에 pod 1개를 실행하는데 볼륨 마운트 되어 있으면, pod가 실행된 호스트에만 마운트되어 저장됨.
+#persistentvolumes
+
+Persistent Volume Claim을 통해서 PV를 생성하고, PV는 특정 디렉토리를 공유한다고 생각하면 됨.
+
+ Persistent Volumes(PVs)을 사용한다면, 로컬 피시에서는 다음과 같이 동작합니다. PV를 생성하여 로컬 피시의 /data 디렉토리를 PV에 연결합니다. 그런 다음 PVC(Persistent Volume Claim)를 생성하여 PV를 요청하고 파드에 마운트합니다. 이렇게 하면 파드가 생성된 노드의 /data 경로에만 데이터가 저장되지 않고, PV에 연결된 로컬 피시의 /data 디렉토리에도 데이터가 저장됩니다.
+
+PV는 로컬 피시의 /data 디렉토리와 연결되어 있으므로 PV의 용량과 접근 모드 등을 설정하여 파드에서 사용할 수 있는 스토리지를 동적으로 할당하고 관리할 수 있습니다.
+
+이렇게 PV를 사용하여 로컬 피시의 /data 디렉토리를 마운트하면, 파드가 다른 노드로 이동하더라도 데이터는 로컬 피시의 /data 디렉토리에 안전하게 유지됩니다.
+
+https://happycloud-lee.tistory.com/256
+
+
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mypod
+spec:
+  containers:
+    - name: myfrontend
+      image: nginx
+      volumeMounts:
+      - mountPath: "/var/www/html"
+        name: mypd
+  volumes:
+    - name: mypd
+      persistentVolumeClaim:
+        claimName: myclaim
+
+
+## 실습 명령어
+kubectl exec webapp -- cat /log/app.log
+
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: webapp
+spec:
+  containers:
+  - name: event-simulator
+    image: kodekloud/event-simulator
+    env:
+    - name: LOG_HANDLERS
+      value: file
+    volumeMounts:
+    - mountPath: /log
+      name: log-volume
+
+  volumes:
+  - name: log-volume
+    hostPath:
+      # directory location on host
+      path: /var/log/webapp
+      # this field is optional
+      type: Directory
+
+
+
+## local에 pv 만들기
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-log
+spec:
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /pv/log
+
+## PVC 생성
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: claim-log-1
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Mi
+
+## 위와 같이 만들면 pvc는 pending, pv가 설정이 안되었기 때문에.
+# pvc, pv의 accessmodes 도 일치 해야 함.
+# vpc에서 50Mi를 요청해도 PV가 100Mi으로 만들어진 것이 할당되면, PVC에서도 100Mi이 할당됨
+
+# pod에 pvc 할당
+apiVersion: v1
+kind: Pod
+metadata:
+  name: webapp
+spec:
+  containers:
+  - name: event-simulator
+    image: kodekloud/event-simulator
+    env:
+    - name: LOG_HANDLERS
+      value: file
+    volumeMounts:
+    - mountPath: /log
+      name: log-volume
+  volumes:
+    - name: log-volume
+      persistentVolumeClaim:
+        claimName: claim-log-1
+
+pvc를 삭제하려면 사용중인 pod를 우선 삭제해야 함.
+행걸려버림
+
+
+
+## Storage Class
+google, aws, nfs 등등, 네트워크 파일시스템을 이용해서 PV를 생성할 수 있다. Static으로 정해진 디스크 용량만을 사용할 수도 있으며, Dynamic하게 사용량에 따라서 디스크 PV의 용량이 결정될 수도 있다.
+NFS의 경우에는 디스크 전체가 사용량으로 잡히므로 static설정이 무의미...
+
+Storage Class로 부르는 이유는, storage타입이 hdd, ssd와 같이 클래스가 나뉘기 때문인데, gce의 경우에는 pd-hdd, pd-ssd 이런식으로 급이 나뉨.
+
+# 관련 명령어
+kubectl get storageclasse
+
+
+kubernetes.io/no-provisioner >> static 모드
+
+# pvc 생성, storageclass
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: local-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500Mi
+  storageClassName: local-storage
+
+
+
+  # pods 생성
+  apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+spec:
+  containers:
+  - name: nginx
+    image: nginx:alpine
+    volumeMounts:
+    - mountPath: /var/www/html
+      name: nginx-volume
+  volumes:
+    - name: nginx-volume
+      persistentVolumeClaim:
+        claimName: local-pvc
+
+# storage class 생성
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: delayed-volume-sc
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+
+
+
+
+###
+
+# network 관련 명령어
+ip link
+ip addr
+ip addr add 192.168.1.10/24 dev eth0 >> 재부팅시 설정 초기화, /etc/network/interfaces 파일 수정해야 영구변경시
+
+ip route
+ip route add 192.168.1.0/24 via 192.168.2.1
+
+cat /proc/sys/net/ipv4/ip_forward >>>> route add 명령어로 라우팅 규칙을 세울 때, 단방향으로만 뚫리기 때문에 아래 결과가 0 이면 단방향, 1이면 양방향으로 가능하게 해줌
+0 or 1
+
+# dns
+nslookup bigdata.com
+dig bigdata.com
+
+# Namespace network
+namespace에서의 PID와 호스트에서의 PID가 다름, 환경이 구분되어 있다는 의미.
+
+# CREATE NETWORK NS
+ip netns add red
+ip netns add blue
+# list 출력
+ip netns
+
+#EXEC NETNS
+ip link : 정보확인
+ip netns exec red ip link
+ip -n red link
+>> namespace 내에서의 네트워크 정보 출력
+
+# Netns 연결
+ip link add veth-red type veth peer name veth-blue
+ip link set veth-red netns red
+ip link set veth-blue netns blue
+
+ip -n red addr add 192.168.15.1 dev veth-red
+ip -n blue addr add 192.168.15.2 dev veth-red
+
+ip -n red link setveth-red up
+ip -n blue link set veth-blue up
+
+ip netns exec red ping 192.168.15.2
+>> 연결 됨
+
+ARP???
+
+위에 방법은 1:1 연결 방법. 다대다 network 설정을 하려면 스위치가 필요. 가상환경에서니까 vswitch가 필요한데, 그중 LINUX BRIDGE 서비스 이용 가능
+
+ip link add v-net-0 type bridge
+ip link set dev v-net-0 up
+
+### 1:1 로 연결했던 위 설정을 v-switch 를 통해서 연결해보자.
+ip link add veth-red type veth peer name veth-red-br
+ip link add veth-blue type veth peer name veth-blue-br
+
+# veth-red,blue 생성한 것, netns, v-switch에 등록
+# veth-red ,veth-blue는 네트워크 디바이스.(가상 디바이스) // 물리세계에서는 NIC이나 스위치같은 장비 역할임.
+ip link set veth-red netns red
+ip link set veth-red-br master v-net-0
+ip link set veth-blue netns blue
+ip link set veth-blue-br master v-net-0
+
+# veth-red, blue에 ip 할당
+# red 네임스페이스 내에 있는 veth-red 네트워크 디바이스에 192.168.15.1 IP 주소를 할당하고, 네임스페이스 내의 컨테이너가 이 IP를 사용할 수 있게 설정 하는 것.
+# dev 는 device의 줄임말로 디바이스 veth-red에 192.168.15.1 아이피를 할당해라~ 라는 의미
+ip -n red addr add 192.168.15.1 dev veth-red
+ip -n blue addr add 192.168.15.2 dev veth-blue
+
+# link set : 네트워크 디바이스의 설정, 속성을 변경하는 명령어. "up"을 통해 veth-red 네트워크 디바이스를 활성화 해라.
+ip -n red link set veth-red up
+ip -n blue link set veth-blue up
+
+##### 여기 까지의 설정은 하나의 호스트에 설정된 namespace간의 네트워크 설정. 그럼 이 NS가 외부의 다른 pc와 통신을 하려면 어떻게 설정을 할까?####
+#192.168.15.5 IP를 가지는 v-net-0 // LINUX BRIDGE를 통해 생성한 V-switch의 아이피를 통한 포워딩
+# blue라는 NETNS를 192.168.1.0 이라는 다른 서버와 연결되는 switch의 IP와 연결하려고 하고, 192.168.15.5 라는 게이트 웨이를 통해서 연결 됨.
+ip netns exec blue ip route add 192.168.1.0/24 via 192.168.15.5  >>> 이렇게 하면 상대가 내 IP 정보를 모르니까 패킷을 보내기만 하고 받을 수 없음.
+
+# 받으려면?
+내가 보내는 패킷에 발신자의 IP 정보를 담아서 보내면 받을 수 있다.
+iptables -t nat -A POSTROUTING -s 192.168.15.0/24 -j MASQUERADE
+
+##docker network
+1. none
+docker run --network none nginx // 네트워크 통신 전체 불가
+2. Host
+docker run --network host nginx // 호스트 자체의 네트워크 사용(포트 동일 사용)
+3. Bridge
+docker run nignx // 기본 설정으로 bridge를 두고 가상 ip를 통해 host 내에서 통신
+docker0라는 network device가 생성, host는 docker0를 통해서 route 설정.
+
+# 상황 1
+docker에 nginx 컨테이너를 80포트로 서비스하고 잇을 때, 외부에서 해당 서비스의 ip와 port로 접속하면 찾을 수 없음
+따라서 해당 docker daemon이 깔린 서버 호스트의 8080포트와 niginx 컨테이너 ip와 포트를 매핑해서 외부에서 접속하도록 할 수 있는데,
+
+docker run -p 8080:80 nginx 명령어를 사용해서 8080포트는 host의 아이피 8080포트, 80포느는 컨테이너의 virtual ip와 80포트로 매핑이되어 자동으로 브릿징 되는 것.
+위 명령어는 아래의 NAT 설정을 하는 것과 같은 프로세스
+iptables -t nat -A PREROUTING -j DNAT --dport 8080 --to-destination 80
+iptables -t nat -A DOCKER -j DNAT --dport 8080 --to-destination 172.17.0.3:80
+
+iptables -nvL -t nat >> docker에 적용 된 NAT 설정을 볼 수 잇음.
+
+
+
+###
+
+#사용 명령어
+ip a : k8s 사용중이 ip 사용 내역, veth 검색 가능.
+
+
+We use Containerd as our container runtime. What is the interface/bridge created by Containerd on the controlplane node?
+
+ip link
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+2: flannel.1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1400 qdisc noqueue state UNKNOWN mode DEFAULT group default 
+    link/ether 56:f1:60:ba:dc:00 brd ff:ff:ff:ff:ff:ff
+3: cni0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1400 qdisc noqueue state UP mode DEFAULT group default qlen 1000
+    link/ether 16:51:80:a5:29:ce brd ff:ff:ff:ff:ff:ff
+4: veth12c25df6@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1400 qdisc noqueue master cni0 state UP mode DEFAULT group default 
+    link/ether 32:07:88:7f:ed:64 brd ff:ff:ff:ff:ff:ff link-netns cni-09b8e20c-0733-8d32-add5-e6b4f80ceee2
+5: vethd7c1348b@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1400 qdisc noqueue master cni0 state UP mode DEFAULT group default 
+    link/ether d6:59:b1:08:c0:a8 brd ff:ff:ff:ff:ff:ff link-netns cni-e2d79bc6-fbc4-296f-5cdb-2813bd7dedcd
+1910: eth0@if1911: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state UP mode DEFAULT group default 
+    link/ether 02:42:c0:09:d8:0c brd ff:ff:ff:ff:ff:ff link-netnsid 0
+1912: eth1@if1913: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default 
+    link/ether 02:42:ac:19:00:25 brd ff:ff:ff:ff:ff:ff link-netnsid 1
+
+flannel.1: 이 인터페이스는 flannel 네트워크 솔루션에서 사용되는 것으로 보입니다. flannel은 컨테이너 네트워크를 구성하는 데 사용되는 도구 중 하나입니다.
+cni0: 이 인터페이스는 CNI (Container Network Interface)에서 사용되는 것으로 보입니다. CNI는 컨테이너 네트워크를 관리하기 위한 표준 인터페이스입니다.
+veth12c25df6@if2, vethd7c1348b@if2: 이 두 인터페이스는 veth(Virtual Ethernet) 디바이스로, 컨테이너와 호스트 간의 가상 이더넷 연결을 나타냅니다. 각각 cni0 인터페이스에 속해 있는 것으로 보입니다.
+위의 인터페이스와 브리지는 Containerd와 함께 사용되는 일반적인 네트워크 구성 요소입니다. 그러나 정확한 Containerd 설정과 사용 중인 네트워크 솔루션에 따라 추가적인 인터페이스나 브리지가 있을 수 있습니다. 이를 확인하기 위해서는 Containerd의 설정과 네트워크 구성에 대한 자세한 정보가 필요합니다.
+
+# routing 설정된 내용 출력
+ip router
+# default 기본값 출력
+ip route show default
+
+# pods들이 사용하는 port 조회
+netstat -tnlp
+# 포트 방향성 확인하기
+netstat -anp | grep etcd
+
+
+
+# CNI Container Network Interface
+docker container 간의 네트워크 설정, Kubernetes에서의 네트워크 설정, rocket 혹은 MESOS같은 솔루션을 이용한 네트워크 설정도 모두 위에 했던 네트워크 설정(명령어)들을 사용해야 통신이 가능하다.
+이러한 것들은 표준화된 설정 플러그인으로 간단하게 설정하기 위해서 CNI가 나옴.
+
+BRIDGE, VLAN, IPVLAN, MACVLAN , WINDOWS, DHCP, host-local 과 같은 타입 설정 가능
+@@@ 별로 알맹이는 없는듯
+
+
+#### kubernetes 에서는 kubelet에 CNI 설정이 들어 잇는데, ps -aux | grep kubelet으로 실행중인 kubelet의 컨피그 파일 정보를 보면, --network-plugin 정보 와 같은게 보일 것임
+
+
+# CNI 중 weave 사용
+weave의 경우에는 모든 노드에 agent 형식으로 pods가 생성되고 호스트간 패킷 전송 정보를 중간에서 전송 수신을 도와 통신할 수 있게 도와줌.
+이 과정에서 보안화해서 패킷을 암호화하기도 함.
+daemon-set 형식으로 1개의 파드만 모든 노드에 설치됨.
+
+#### 명령어
+ps -aux | grep -i kubelet
+# 기본 경로 cni
+/opt/cni/bin
+# plugin config
+/etc/cni/net.d/
+
+# weave-net 관련 명령어
+weave-net 설정 방법.
+1. wget 으로 yaml파일 설치
+2. kube-proxy 동작중이면 관련 설정 가져오기
+2-1 describe로 확인해서
+kube-proxy에서 volume 확인 // 해당 내용은 kubeconfig에 저장
+2-2 kubectl get configmap -n kube-system
+kubectl describe configmap kube-proxy -n kube-proxy
+2-3 clusterCIDR 확인 및 복사
+
+1.에서 받은 yaml에 IPALLOC_RANGE 관련 내용 추가.
+
+# IP Address Management
+IP 대역 설정을 어떻게 할까.
+Weave의 경우에는 10.32.0.1 ~ 10.47.255.254 까지 ip 대역을 사용한다.
+만약 3대의 호스를 사용하면 3등분해서 대역을 가지게 됨.
+그럼. pod가 생성될 때 10.32.0.1~~ 이렇게 무작위로 생성, 이런식으로 파드가 생성.
+
+# weave에 할당된 ip 대역확인하기
+# weave는 weave라는 이름으로 network device를 생성함
+ip a >> weave dev이름 확인
+ip addr show weave
+
+#What is the default gateway configured on the PODs scheduled on node01?
+ip route show default
+
+
+
+## Cluster IP
+## Node Port
+동일한 서비스를 하는 파드가 3개의 노드에 골고루 생성되어 있다.
+동일한 네트워크 진입점을 만들기 위해서 우리는 Cluster IP, NodePort를 사용할 수 있는데,
+
+10.244.1.2, 10.244.1.3, 10.244.2.2, 10.244.3.2
+위 내개의 파드가 동일한 웹 서비스를 실행중이고
+10.99.13.178 ip로 접근이 가능할 때, 30080이라는 외부 포트를 열어 고객들이 접속할 수 있게 하는 것이 nodeport
+
+Service는 특정 노드에 생성되는게 아니라 모든 클러스터 걸쳐서 생성되는 서비스
+virtual object라고 생각하면 됨. 이 Service에 10.99.13.178이라는 IP가 할당 되는것 Cluster IP.
+그럼 Service가 10.244.1.2, 10.244.2.2 와 같은 파드에 네트워크 요청이 들어오면 포워딩 해주는 것.
+
+iptables -L -t nat | grep "service_name"
+위 명령어를 사용해보면, serivce를 통해서 모든 네트워크 요청이 들어오고, 관련 pod의 ip, port에 포트포워딩 해주는 로그 볼 수 있음
+
+Nodeport를 지정하면, 해당 pods에 직접 붙을 수 있는 포트를 오픈하는 것.
+
+
+1. Nodeport 사용시
+10.244.1.2:30080 , 10.244.2.2:30080, 10.244.3.2:30080 과 같이 외부에 서비스를 노출할 수 있다.
+2. Cluster IP
+Service에 할당된 IP 10.99.13.178:port 를 통해서 요청이 들어오고, 10.244.x.2 파드들에 요청이 나눠서 들어간다.
+
+
+## 사용 명령어
+ip addr
+출력중에서 eth0 >> node에 할당되는 ip range 확인 가능
+weave >> pod에 할당되는 ip range 확인가능
+# service ip range
+cat /etc/kubernetes/manifests/kube-apiserver.yaml   | grep cluster-ip-range
+
+
+/etc/kubernetes/manifests 경로는 Kubernetes 마스터 노드에서 사용되는 중요한 디렉토리입니다. 이 경로에는 Kubernetes 클러스터의 핵심 구성 요소인 각각의 컨트롤 플레인 컴포넌트의 매니페스트 파일이 저장됩니다.
+
+일반적으로 다음과 같은 파일들이 /etc/kubernetes/manifests 경로에 저장됩니다:
+
+kube-apiserver.yaml: Kubernetes API 서버의 구성과 설정을 정의하는 매니페스트 파일입니다. API 서버는 클러스터 내의 모든 리소스에 대한 인터페이스를 제공하고, 클러스터 상태를 유지하고, 클러스터 구성 요소 간의 통신을 조정합니다.
+kube-controller-manager.yaml: Kubernetes 컨트롤러 매니저의 구성과 설정을 정의하는 매니페스트 파일입니다. 컨트롤러 매니저는 클러스터의 여러 컨트롤러를 실행하고, 노드 및 파드 상태를 관리하며, 클러스터 상태를 감시합니다.
+kube-scheduler.yaml: Kubernetes 스케줄러의 구성과 설정을 정의하는 매니페스트 파일입니다. 스케줄러는 새로운 파드를 클러스터의 노드에 할당하는 역할을 담당합니다.
+etcd.yaml: Kubernetes 클러스터의 백업 및 복구를 위해 사용되는 etcd 데이터베이스의 구성과 설정을 정의하는 매니페스트 파일입니다.
+
+# kube-proxy의 type 확인
+kubectl logs kube-proxy-4qxvz -n kube-system
+
+
+
+## kubernetes DNS
+k8s 구성시 DNS는 기본으로 설치되어 있음
+기본으로는 동일한 nameserver면 name이름으로 그냥 호출가능
+다른 NS면 http://webservice.namespace 형태로 호출 가능
+
+FQDN으로 쓰면.
+curl http://web-service.apps.svc.cluster.local
+http://[host_name].[namespace].[type].[root]
+
+만약 pods에 직접 붙으려면?
+curl http://10-244-2-5.apps.pod.cluster.local
+[pod ip를 -로 붙여서].[ns].pod.cluster.local
+
+## Core DNS
+Kubernetes 내에서 DNS 역할, coredns
+
+/etc/coredns/Corefile
+
+kubectl get service -n kube-system을 보면 kube-dns로 DNS ip확인 가능하며,
+cat /var/lib/kubelet/config.yaml을 보면 ClusterDNS: 정보가 있음
+
+/etc/resolv.conf에 search 옵션을 주는 것은 service에 한해서 svc.cluster.local을 등록해서 자동으로 붙게 할 수 있고,
+10-244-25-1 이런식으로 pod ip로 호출 할 때는 FQDN을 모두 써야함, 즉 search 옵션을 작성해도 안됨
+
+
+# 명령어 사용
+kubectl exec hr -it -- nslookup mysql.payroll > /root/CKA/nslookup.out
+## 다른 namespace의 경우에는 pods이름.namespace이름으로 붙는다. !!!!
+
+
+### INGRESS
+웹사이트를 운영하면서 http://example.com 이라는 사이트를 운영하고
+example.com/wear 이라는 도메인으로 옷과 관련된 정보를 배포한다.
+그럼 외부의 사용자가 Pods에 접근하기 위해서 우리가 할 수 있는건?
+Nodeport를 이용해서 pods의 아이피와 port를 이용해 접근할 수 있다.
+하지만 트래픽이 많아져 pods가 늘어나면, pods의 각각 다른 ip를 제공해야 하고, 우리는 Domain Name을 사용해 접근하며, port번호도 알리고 싶지않다.
+
+그렇다면? proxy 서버를 하나 두어서 80포트로 http://example.com:80 으로 proxy 서버에 들어오면(pod) proxy에서 로드밸런싱을 하면서 kubernetes 내부의 wear 웹 사이트 관련 파드에 로드밸런싱을 할 것이다.
+만약 example.com/video 라는 url으로 동일한 클러스터 내에서 새로운 웹 서비스를 추가하면? video url을 위한 로드밸런서가 필요해질 것이다.
+
+그렇다면 이 두가지의 로드밸런스를 통해서 들어오는 진입점을 하나로 묶기 위해서는? 또 다른 장비가 필요하다.
+
+또한, 여기에 TLS 보안을 씌우고 싶다면? 관리자는 어디에서 부터 어디까지 설정을 해야할까?
+
+이 고민을 해결할 수 있는데 Ingress 다.
+
+위에 언급된 리밸런싱, TLS/ssl 다 proxy기능 모두 다 가능하다
+
+
+## ingress
+ingress controller + inress resources
+기본으로 구성되는게 아님. 사용자가 만들어야 한다.
+controller에서는 NGINX, GCE, HAPROXY, 등등이 있는데 
+GCE, NGINX가 k8s 프로젝트에서 공식적으로 지원? 되는 서비스임
+
+
+###nginx-ingress 배포방법
+## nginx controller 만들기
+1. ConfigMap 생성
+2. nginx-ingress-controller Deployment 생성
+3. nginx-ingress service 생성
+4. nginx-ingress-serviceaccount 생성
+## ingress resource 생성
+
+
+
+########### 실습
+kubectl get replicaset -A
+NAMESPACE       NAME                                  DESIRED   CURRENT   READY   AGE
+app-space       default-backend-7845d8c4f             1         1         1       84s
+app-space       webapp-video-55fcd88897               1         1         1       84s
+app-space       webapp-wear-554bbffcd6                1         1         1       85s
+ingress-nginx   ingress-nginx-controller-5d48d5445f   1         1         1       81s
+kube-system     coredns-5d78c9869d                    2         2         2       5m2s
+
+controlplane ~ ➜  kubectl get svc -A
+NAMESPACE       NAME                                 TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE
+app-space       default-backend-service              ClusterIP   10.105.162.244   <none>        80/TCP                       106s
+app-space       video-service                        ClusterIP   10.98.19.53      <none>        8080/TCP                     106s
+app-space       wear-service                         ClusterIP   10.96.121.71     <none>        8080/TCP                     107s
+default         kubernetes                           ClusterIP   10.96.0.1        <none>        443/TCP                      5m41s
+ingress-nginx   ingress-nginx-controller             NodePort    10.105.189.42    <none>        80:30080/TCP,443:32103/TCP   103s
+ingress-nginx   ingress-nginx-controller-admission   ClusterIP   10.97.175.51     <none>        443/TCP                      103s
+kube-system     kube-dns                             ClusterIP   10.96.0.10       <none>        53/UDP,53/TCP,9153/TCP       5m38s
+
+controlplane ~ ➜  kubectl get deployment -A
+NAMESPACE       NAME                       READY   UP-TO-DATE   AVAILABLE   AGE
+app-space       default-backend            1/1     1            1           2m16s
+app-space       webapp-video               1/1     1            1           2m16s
+app-space       webapp-wear                1/1     1            1           2m17s
+ingress-nginx   ingress-nginx-controller   1/1     1            1           2m13s
+kube-system     coredns                    2/2     2            2           6m8s
+
+controlplane ~ ➜  kubectl get ingress -A
+NAMESPACE   NAME                 CLASS    HOSTS   ADDRESS         PORTS   AGE
+app-space   ingress-wear-watch   <none>   *       10.105.189.42   80      3m35s
+
+## Ingress 만들기 // not default namespace
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: pay-ingress
+  namespace: critical-space
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /pay
+        pathType: Prefix
+        backend:
+          service:
+            name: pay-service
+            port:
+              number: 8282
+
+
+
+## 다른 namespace에 role, rolebinding, clusterbinding 설정
+# 다른 ns에 있는 path 이용하려면 해당 파드에 네임스페이스에 ingress 생성해야 함.
+# ingress는 namespace로 검색됨.
+
+
+
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-nginx
+  namespace: app-space
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /wear
+            pathType: Prefix
+            backend:
+              service:
+                name: wear-service
+                port:
+                  number: 8080
+          - path: /watch
+            pathType: Prefix
+            backend:
+              service:
+                name: video-service
+                port:
+                  number: 8080
+
+
+
+######### alias k=kubectl
+하면 kubectl 다 안써도 괜찮음
+
+
+## Kubernetes HA 구성
+master를 HA 구성,
+마스터의 api server 6431포트로 통신이 되는데, 2개의 노드에 접근하려면? load balancer를 두어서 분배해야 함.
+controller manager는 active standby 형태로 동작
+kube-controller-manager --leader-elect true 옵션으로 가능. ++ Scheduler
+
+
+1. ETCD, external ETCD 서버를 두는 방법. kube-apiserver.service 파일에서 --etcd-servers=아래에 서버 정보를 ,를 구분으로 여러개 작성
+
+
+## ETCD HA
+3개의 etcd가 있다면, 각자의 etcd에 write, 그다음 다른 etcd에 내용 전달
+Raft 알고리즘으로 리더 선출.. 그럼 3, 5, 이상 노드 필요?
+그럼, 리더에만 write가 일어나고, 나머지 flower에 복사해주는 형식이 됨.
+
+
+
+
+### Trouble Shooting
+#1. application
+kubectl get svc -A
+kubectl describe svc [name] -n [ns]
+kubectl edit svc [name] -n [ns]
+
+kubectl get deployments -n [ns]
+kubectl edit deploy [name] -n [ns]
+
+kubectl logs [pod name] -n [ns]
+kubectl get pods [name] -o yaml > pod.yaml
+vi pod.yaml :: 수정
+kubectl delete pod [name] -n [ns]
+kubectl create/apply -f pod.yaml
+
+#2. Controlplane
+
+
+
+
+노드 로그 확인
+journalctl -u kubelet 
+
+
+# dns
+
+Troubleshooting issues related to coreDNS
+1. If you find CoreDNS pods in pending state first check network plugin is installed.
+
+2. coredns pods have CrashLoopBackOff or Error state
+
+If you have nodes that are running SELinux with an older version of Docker you might experience a scenario where the coredns pods are not starting. To solve that you can try one of the following options:
+
+a)Upgrade to a newer version of Docker.
+
+b)Disable SELinux.
+
+c)Modify the coredns deployment to set allowPrivilegeEscalation to true:
+
+
+
+kubectl -n kube-system get deployment coredns -o yaml | \
+  sed 's/allowPrivilegeEscalation: false/allowPrivilegeEscalation: true/g' | \
+  kubectl apply -f -
+d)Another cause for CoreDNS to have CrashLoopBackOff is when a CoreDNS Pod deployed in Kubernetes detects a loop.
+
+
+
+  There are many ways to work around this issue, some are listed here:
+
+
+
+Add the following to your kubelet config yaml: resolvConf: <path-to-your-real-resolv-conf-file> This flag tells kubelet to pass an alternate resolv.conf to Pods. For systems using systemd-resolved, /run/systemd/resolve/resolv.conf is typically the location of the "real" resolv.conf, although this can be different depending on your distribution.
+
+Disable the local DNS cache on host nodes, and restore /etc/resolv.conf to the original.
+
+A quick fix is to edit your Corefile, replacing forward . /etc/resolv.conf with the IP address of your upstream DNS, for example forward . 8.8.8.8. But this only fixes the issue for CoreDNS, kubelet will continue to forward the invalid resolv.conf to all default dnsPolicy Pods, leaving them unable to resolve DNS.
+
+
+
+3. If CoreDNS pods and the kube-dns service is working fine, check the kube-dns service has valid endpoints.
+
+              kubectl -n kube-system get ep kube-dns
+
+If there are no endpoints for the service, inspect the service and make sure it uses the correct selectors and ports.
+
+
+
+
+
+Kube-Proxy
+---------
+kube-proxy is a network proxy that runs on each node in the cluster. kube-proxy maintains network rules on nodes. These network rules allow network communication to the Pods from network sessions inside or outside of the cluster.
+
+
+
+In a cluster configured with kubeadm, you can find kube-proxy as a daemonset.
+
+
+
+kubeproxy is responsible for watching services and endpoint associated with each service. When the client is going to connect to the service using the virtual IP the kubeproxy is responsible for sending traffic to actual pods.
+
+
+
+If you run a kubectl describe ds kube-proxy -n kube-system you can see that the kube-proxy binary runs with following command inside the kube-proxy container.
+
+
+
+    Command:
+      /usr/local/bin/kube-proxy
+      --config=/var/lib/kube-proxy/config.conf
+      --hostname-override=$(NODE_NAME)
+ 
+
+    So it fetches the configuration from a configuration file ie, /var/lib/kube-proxy/config.conf and we can override the hostname with the node name of at which the pod is running.
+
+ 
+
+  In the config file we define the clusterCIDR, kubeproxy mode, ipvs, iptables, bindaddress, kube-config etc.
+
+ 
+
+Troubleshooting issues related to kube-proxy
+1. Check kube-proxy pod in the kube-system namespace is running.
+
+2. Check kube-proxy logs.
+
+3. Check configmap is correctly defined and the config file for running kube-proxy binary is correct.
+
+4. kube-config is defined in the config map.
+
+5. check kube-proxy is running inside the container
+
+# netstat -plan | grep kube-proxy
+tcp        0      0 0.0.0.0:30081           0.0.0.0:*               LISTEN      1/kube-proxy
+tcp        0      0 127.0.0.1:10249         0.0.0.0:*               LISTEN      1/kube-proxy
+tcp        0      0 172.17.0.12:33706       172.17.0.12:6443        ESTABLISHED 1/kube-proxy
+tcp6       0      0 :::10256                :::*                    LISTEN      1/kube-proxy
+
+
+
+
+References:
+
+Debug Service issues:
+
+                     https://kubernetes.io/docs/tasks/debug-application-cluster/debug-service/
+
+DNS Troubleshooting:
+
+                     https://kubernetes.io/docs/tasks/administer-cluster/dns-debugging-resolution/
