@@ -89,10 +89,6 @@ Read/write complex types	| Apache Hive	| ✓	| ✓	| Hive
 
 
 
-https://orc.apache.org/
-https://parquet.apache.org/docs/
-https://en.wikipedia.org/wiki/Apache_Parquet
-
 
 ### Reference
 
