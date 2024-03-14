@@ -13,7 +13,7 @@ author: # 작성자
 
 ## Columnar, 컬럼형 저장 방식이란
 
-<img src="/image/columnar.png" alt="image" style="height: 620px; width:312px;"/>
+<img src="/image/columnar.png" alt="image" style="height: 312px; width:620px;"/>
 
 컬럼형 파일 형식은 행이 아닌 열 단위로 데이터를 저장하는 형식이다. 고성능 및 확장성이 필요한 데이터 웨어하우스 및 기타 스토리지 시스템에 적합하다.   
 특정 컬럼 조회시, 관련 컬럼에만 액세스하면 되므로 대규모 데이터 세트를 더 쉽게 쿼리하고 분석할 수 있다.  
@@ -21,7 +21,7 @@ author: # 작성자
 
 ## Apache ORC
 
-<img src="/image/parquet_orc.png" alt="image" style="height: 720px; width:412px;"/>
+<img src="/image/parquet_orc.png" alt="image" style="height: 412px; width:720px;"/>
 
 
 Apache ORC는 Apache Hive의 처리 속도 향상과 Apache Hadoop 데이터 저장 효율 개선을 위해 개발되었다.   
