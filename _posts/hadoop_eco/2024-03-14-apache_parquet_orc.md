@@ -69,7 +69,8 @@ ORC는 고속 쓰기가 필요한 경우에 자주 사용. 특히 Hive 기반 �
 ORC는 복잡하고 중첩된 데이터 유형을 사용할 때 좋음.
 
 
-**<parquet, orc table>**
+**<parquet, orc table>**   
+
 Capability	| Data Warehouse	| ORC |	Parquet | SQL Engine
 ------------| --------------- | --- | ------- | ---------
 Read non-transactional data	| Apache Hive	| ✓	| ✓	| Hive
