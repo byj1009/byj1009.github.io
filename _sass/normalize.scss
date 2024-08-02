@@ -9,8 +9,8 @@
  */
 
 html {
-  line-height: 1.15; /* 1 */
-  -webkit-text-size-adjust: 100%; /* 2 */
+  line-height: 1.15; /* 1 */   //줄 높이 설정
+  -webkit-text-size-adjust: 100%; /* 2 */ //Chrome, Safari 같은 브라우저에서 크기 조절시, 폰트 사이즈 유지
 }
 
 /* Sections
@@ -38,8 +38,8 @@ main {
  */
 
 h1 {
-  font-size: 2em;
-  margin: 0.67em 0;
+  font-size: 2em;   //2em: 부모 요소의 폰트 크기 2배
+  margin: 0.67em 0; //상하 여백 0.67, 좌우 여백 0
 }
 
 /* Grouping content

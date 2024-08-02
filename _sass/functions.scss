@@ -1,9 +1,9 @@
 @mixin media-query($device) {
-  @media screen and (max-width: $device) {
+  @media screen and (max-width: $device) { //$device : 최대 화면 너비
     @content;
   }
 }
 
 @mixin relative-font-size($ratio) {
-  font-size: #{$ratio}rem;
+  font-size: #{$ratio}rem; //$ratio 상대적인 폰트 크기 설정(비율)
 }

@@ -1,13 +1,17 @@
 html {
-  font-size: $base-font-size;
+  font-size: $base-font-size; // html요소 기본 폰트 사이즈 정의
 
   @include media-query($on-small) {
-    @include relative-font-size(0.89);
+    @include relative-font-size(0.89); // 반응형 웹 디자인 구성, 화면 크기에 따른 폰트 사이즈 변경
   }
 }
 
 /**
  * Reset some basic elements
+ body, 모든 제목 태그(h1~h6), 문단(p), 
+ 인용(blockquote), 코드 블록(pre), 수평선(hr), 
+ 정의 목록(dl, dd), 순서 목록(ol), 
+ 비순서 목록(ul), 그리고 그림(figure)
  */
 body, h1, h2, h3, h4, h5, h6,
 p, blockquote, pre, hr,
@@ -31,26 +35,26 @@ ul, ol, dl, figure, iframe,
  */
 body {
   font-family: $base-font-family;
-  -webkit-text-size-adjust: 100%;
-  -webkit-font-feature-settings: "kern" 1;
+  -webkit-text-size-adjust: 100%;//웹킷 기반 브라우저에서 페이지 크기 변경에 따른 폰트사이즈 변경x
+  -webkit-font-feature-settings: "kern" 1;//kerning(글자간격) 조정
      -moz-font-feature-settings: "kern" 1;
        -o-font-feature-settings: "kern" 1;
           font-feature-settings: "kern" 1;
-  font-kerning: normal;
-  display: flex;
-  min-height: 100vh;
-  flex-direction: column;
-  overflow-wrap: break-word;
+  font-kerning: normal;// 글자 사이 공간 조절
+  display: flex; // 플렉스 컨테이너로 설정....?
+  min-height: 100vh; // 뷰포트 높이 100%설정, 페이지가 항상 화면 가득 채우도록 vh(viewport height) : example) 50vh는 800픽셀의 50%인 400픽셀이 됨
+  flex-direction: column; // 플렉스 아이템이 세로 방향으로 쌓임
+  overflow-wrap: break-word; // 긴 단어 줄 바꿈
   line-height: $base-line-height;
 }
 
-p {
+p {   // 다양한 브라우저에서 하이픈을 자동으로 적용해, 단어가 줄 바꿈 시에 잘리도록 설정
   -webkit-hyphens: auto;
       -ms-hyphens: auto;
           hyphens: auto;
 }
 
-hr {
+hr { // 수평선의 위아래 공백 설정
   margin-top: $spacing-unit;
   margin-bottom: $spacing-unit;
 }
