@@ -39,7 +39,6 @@ social:
   name: YJ
   links:
     - https://www.notion.so/e2ea1e3c2c644bf99dc93f5704b2b1cf?v=1ba17b2751e94dcd880cf8c2ada533eb
-    - https://www.facebook.com/ngzhio
     - https://github.com/byj1009
 google_site_verification: u4WXQl0Eu66rsQo2kRdCNx
 lang: ko-KR
@@ -48,8 +47,5 @@ lang: ko-KR
 #jekyll 테마 URL 적용
 baseurl: ""
 url: "https://byj1009.github.io"
-
-#Skin type 변경
-skin: daylight
 
 future : true
