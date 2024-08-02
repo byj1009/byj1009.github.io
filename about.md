@@ -4,7 +4,19 @@ title: About
 permalink: /about/
 ---
 
-# 무엇이든 해내고 마는, 도전하는 엔지니어 변영준입니다.
+# 마부작침(磨斧作針)
 
-Data Engineer라는 목표로 나아가기 위해 정진 중 입니다.
-Versatile(다재다능한) 인재가 되기 위한 IT기술, 프로그래밍 관련 지식을 포스팅하는 블로그입니다.
+Data Engineer가 되기 위해 열심히 공부하고 있는 주니어입니다.
+Hadoop Ecosystem 기반의 빅데이터 플랫폼의 구축 및 데이터 엔지니어링 업무를 주로 수행합니다.
+
+- Hadoop Ecosystem
+    - Hadoop
+    - Spark
+    - Hive & Impala Query
+    - Kafka
+    - Flink
+    - Nifi (학습중!!)
+- Python
+- RDBMS
+    - Mysql(MariaDB)
+    - PostgreSQL
