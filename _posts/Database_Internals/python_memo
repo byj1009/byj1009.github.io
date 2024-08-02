@@ -1,0 +1,33 @@
+파이썬 dictionary 타입에서 key value 뽑아서 사용하는 방법
+for key, val in dictionary.items():
+        if val == value:
+            return key
+
+dictionary 선언
+a = {}
+
+key 존재 확인
+if "키 이름" in dict_name:
+
+# key 의 value 얻기
+dict_name['key']
+>> key 없으면 에러 발생함
+
+dict_name.get('key')
+>> value // None
+
+dict_name.get('key', "default_value")
+>> deffault_value // 값이 없으면 기본 값
+
+# 딕셔너리 키, 밸류 추가
+dict_name = {}
+dict_name["key1"] = "value1"
+dict_name["key2"] = "value2"
+
+
+###### list의 합,차,교집합 구하기
+list1, list2
+
+ans_list = list(set(list1) | set(list2)) # 합집합
+ans_list = list(set(list1) & set(list2)) # 교집합
+ans_list = list(set(list1) - set(list2)) # 차집함
