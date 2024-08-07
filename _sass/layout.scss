@@ -672,3 +672,27 @@ figcaption.align-center {
     }
   }
 }
+
+// Custom code
+/**
+ * theme-toggle
+ */
+.theme-toggle {
+  color: var(#374151);
+  background-color: transparent;
+  padding: 4px;
+  cursor: pointer;
+  margin: 1em;
+  position: fixed;
+  right: 0;
+  top: 0;
+  border: 2px transparent solid;
+  outline: none;
+}
+.theme-toggle:hover {
+  color: var(#6366f1);
+  outline: none;
+}
+.theme-toggle:focus {
+  outline: none;
+}
