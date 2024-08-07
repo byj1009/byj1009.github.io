@@ -1,0 +1,21 @@
+---
+---
+@import 
+  "skins/daylight",
+  "skin"
+;
+@import 
+  "skins/midnight",
+  "skin"
+;
+
+
+body.daylight {
+    @extend daylight; // 기본 스타일을 상속받음
+    // 추가적인 전용 스타일이 있다면 여기에 작성
+}
+
+// skin2 클래스 정의
+body.midnight {
+    @extend midnight; // 기본 스타일을 상속받음
+}
