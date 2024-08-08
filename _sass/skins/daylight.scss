@@ -1,4 +1,5 @@
-$text-color:            #111 !default;
+.daylight{
+  $text-color:            #111 !default;
 $text-color-light:      #666 !default;
 $background-color:      #fff !default;
 $code-background-color: #f8f8f8 !default;
@@ -232,3 +233,5 @@ $subscribe-color:       #b21000 !default;
 .highlight {
   background-color: #f8f8f8;
 }
+}
+
