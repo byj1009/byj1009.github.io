@@ -1,6 +1,4 @@
-@charset 'utf-8';
-@import '../skin.scss';
-.daylight{
+
     $text-color:            #111 !default;
     $text-color-light:      #666 !default;
     $background-color:      #fff !default;
@@ -235,8 +233,6 @@
   .highlight {
     background-color: #f8f8f8;
   }
-@include skin;
-}
 
   
 
