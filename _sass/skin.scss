@@ -1,5 +1,4 @@
 @charset "utf-8";
-@mixin skin{
   body {
       color: $text-color;
       background-color: $background-color;
@@ -183,5 +182,3 @@
         }
       }
     }
-    
-}
