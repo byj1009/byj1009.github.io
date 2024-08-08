@@ -1,5 +1,6 @@
 @charset 'utf-8';
-@import '../skin.scss';
+@import '_sass/skin.scss';
+
 .midnight{
   $text-color:            lightgrey !default;
   $text-color-light:      silver !default;
