@@ -517,7 +517,8 @@ ul.post-categories {
 .post-content {
   font-family: $reading-font-family;
   margin-bottom: $spacing-unit;
-
+  img.mo_img{width:100%; max-width:375px;}
+  img{width:100%; height:auto;}
   h2, h3, h4, h5, h6 {
     font-family: $headline-font-family;
   }
