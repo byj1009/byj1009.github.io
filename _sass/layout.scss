@@ -678,28 +678,8 @@ figcaption.align-center {
 /**
  * theme-toggle
  */
-// .theme-toggle {
-//   color: var(#374151);
-//   background-color: transparent;
-//   padding: 4px;
-//   cursor: pointer;
-//   margin: 1em;
-//   position: fixed;
-//   right: 20px;
-//   bottom: 20px;
-//   border: 2px transparent solid;
-//   outline: none;
-// }
-// .theme-toggle:hover {
-//   color: var(#6366f1);
-//   outline: none;
-// }
-// .theme-toggle:focus {
-//   outline: none;
-// }
-
-.dark-theme-toggle {
-  color: var(--color);
+.theme-toggle {
+  color: var(#374151);
   background-color: transparent;
   padding: 4px;
   cursor: pointer;
@@ -710,11 +690,11 @@ figcaption.align-center {
   border: 2px transparent solid;
   outline: none;
 }
-.dark-theme-toggle:hover {
+.theme-toggle:hover {
   color: var(#6366f1);
   outline: none;
 }
-.dark-theme-toggle:focus {
+.theme-toggle:focus {
   outline: none;
 }
 .switch {
