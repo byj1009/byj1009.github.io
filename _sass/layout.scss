@@ -757,7 +757,7 @@ figcaption.align-center {
 
 .switch input[type="checkbox"]:checked+label::before {
 	background-color: #000;
-	border-color:#fff;
+	border:solid 1px #ebeced;
 }
 
 .switch input[type="checkbox"]:checked+label::after {
